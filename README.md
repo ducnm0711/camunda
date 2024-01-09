@@ -1,5 +1,6 @@
 ```
-helm install camunda-8 camunda-platform -f values.yaml
+helm -n infra install camunda-8 camunda-platform -f values.yaml
+helm -n infra diff upgrade --install camunda-8 camunda-platform -f values.yaml
 ```
 
 - Multi Region: 1 
