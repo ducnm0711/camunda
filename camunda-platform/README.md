@@ -1,8 +1,5 @@
 # Camunda 8 Helm Chart
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Test - Unit](https://github.com/camunda/camunda-platform-helm/actions/workflows/test-unit.yml/badge.svg)](https://github.com/camunda/camunda-platform-helm/actions/workflows/test-unit.yml)
-[![Camunda 8](https://img.shields.io/badge/dynamic/yaml?label=Camunda%20Platform&query=version&url=https%3A%2F%2Fraw.githubusercontent.com%2Fcamunda%2Fcamunda-platform-helm%2Fmain%2Fcharts%2Fcamunda-platform%2FChart.yaml?style=plastic&logo=artifacthub&logoColor=white&labelColor=417598&color=2D4857)](https://artifacthub.io/packages/helm/camunda/camunda-platform)
 
 Please also refer to the [documentation](https://docs.camunda.io/docs/self-managed/platform-deployment/helm-kubernetes/deploy/) on how to use Helm charts.
 
@@ -10,9 +7,6 @@ Please also refer to the [documentation](https://docs.camunda.io/docs/self-manag
 - [Requirements](#requirements)
 - [Dependencies](#dependencies)
 - [Versioning](#versioning)
-  - [After July 2023](#after-july-2023)
-  - [Before July 2023](#before-july-2023)
-  - [Compatibility Matrix](#compatibility-matrix)
 - [Installation](#installation)
   - [Local Kubernetes](#local-kubernetes)
   - [OpenShift](#openshift)
@@ -55,12 +49,12 @@ Please also refer to the [documentation](https://docs.camunda.io/docs/self-manag
 
 ## Requirements
 
-* [Helm](https://helm.sh/) >= 3.9.x
-* Kubernetes >= 1.20+
-* Minimum cluster requirements include the following to run this chart with default settings.
-  All of these settings are configurable.
-  * Three Kubernetes nodes to respect the default "hard" affinity settings
-  * 2GB of RAM for the JVM heap
+- [Helm](https://helm.sh/) >= 3.9.x
+- Kubernetes >= 1.20+
+- Minimum cluster requirements include the following to run this chart with default settings.
+  - All of these settings are configurable.
+  - Three Kubernetes nodes to respect the default "hard" affinity settings
+  - 2GB of RAM for the JVM heap
 
 ## Dependencies
 
@@ -69,7 +63,7 @@ and some are external (third-party). The dependency management is fully automate
 however, it's good to understand the dependency structure. This third-party dependency is reflected in the Helm chart
 as follows:
 
-```
+```text
 camunda-platform
   |_ elasticsearch
   |_ identity
@@ -82,7 +76,8 @@ camunda-platform
   |_ postgresql
 ```
 
-> :bulb: Please note that the Connectors and Web Modeler components are part of the main chart and not implemented as sub-charts.
+> [!NOTE]
+> Please note that the Connectors and Web Modeler components are part of the main chart and not implemented as sub-charts.
 
 For example, Camunda Identity utilizes Keycloak and allows you to manage users, roles, and permissions
 for Camunda 8 components.
@@ -106,35 +101,11 @@ postgresql:
 
 ## Versioning
 
-### After July 2023
+After the 8.4 release (January 2024), the Camunda Helm chart version is **decoupled** from the version of the application (e.g., the chart version is `9.0.0` and the application version is `8.4.x`).
 
-Starting from July 2023 (v8.2.8), the Camunda 8 **Helm chart** version follows the same unified schema
-and schedule as [Camunda 8 applications](https://github.com/camunda/camunda-platform).
+Before the 8.4 release, the Camunda Helm chart version was **coupled** with the applications version (e.g., chart version is `8.3.x` and applications version is `8.3.x`).
 
-Hence, if the Camunda 8 unified **applications** version is `8.2.8`, the Camunda 8 **Helm chart**
-will also be `8.2.8`.
-
-### Before July 2023
-
-Camunda 8 **Helm chart** versions are only aligned with the minor version of
-[Camunda 8](https://github.com/camunda/camunda-platform). In other words, the `Camunda 8 Helm chart`
-could have a different patch version than the `Camunda` Platform 8 Applications`.
-
-For example, the Camunda 8 **Helm chart** could be on version `8.1.1`, but Camunda 8 **applications**
-are on version `8.1.0`. Additionally, the Camunda 8 **Helm chart** could be on version `8.1.1`,
-but Camunda 8 **applications** are on version `8.1.2`.
-
-### Compatibility Matrix
-
-The core Camunda applications have a unified fixed release schedule (minor release twice a year and patch release
-every month). However, some of the applications have their own schedule. The following compatibility matrix gives
-an overview of the different versions.
-
-| Release Cycle | Helm chart | Zeebe, Operate, Tasklist | Optimize | Web Modeler  | Connectors |
-| ---           | ---        | ---                      | ---      | ---          | ---        |
-| Apr 2023      | 8.2.x      | 8.2.x                    | 3.10.x   | 8.2.x        | >= 0.18.0  |
-| Oct 2022      | 8.1.x      | 8.1.x                    | 3.9.x    | N/A          | N/A        |
-| Apr 2022      | 8.0.x      | 8.0.x                    | 3.9.x    | N/A          | N/A        |
+For more details, check out the [full version matrix](https://helm.camunda.io/camunda-platform/version-matrix).
 
 ## Installation
 
@@ -157,7 +128,7 @@ helm install camunda-platform camunda/camunda-platform \
     --values https://helm.camunda.io/camunda-platform/values/values-latest.yaml
 ```
 
-For previous version, you can get the latest applications patch version using our [backporting mechanism](#backporting).
+For the previous version, you can get the latest applications patch version using our [backporting mechanism](#backporting).
 
 ### Local Kubernetes
 
@@ -169,16 +140,16 @@ For more details, follow the Camunda 8
 
 ### OpenShift
 
-Check out [OpenShift Support](openshift/README.md) to get started with deploying the charts on Red Hat OpenShift. 
+Check out [OpenShift Support](openshift/README.md) to get started with deploying the charts on Red Hat OpenShift.
 
 ## Backporting
 
 Our Helm chart is highly customizable and constantly evolving.
-Hence, currently, we backport the older charts by providing extra values file per version.
+Hence, currently, we backport the older charts by providing an extra value file per version.
 That covers most backporting cases, like updating the application's image tags to the latest patch
 version, setting env var, etc.
 
-To install a previous chart version with the latest apps patch image tags for that version,
+To install a previous chart version with the latest app patch image tags for that version,
 use the values file for the minor release. For example (the values file could also be downloaded):
 
 ```shell
@@ -191,10 +162,10 @@ helm install camunda-platform camunda/camunda-platform --version 8.1 \
 You can remove these charts by running:
 
 ```sh
-helm uninstall YOUR_RELEASE_NAME
+helm uninstall camunda
 ```
 
-> **Note**
+> [!NOTE]
 >
 > Notice that all the Services and Pods will be deleted, but not the PersistentVolumeClaims (PVC)
 > which are used to hold the storage for the data generated by the cluster and Elasticsearch.
@@ -204,15 +175,15 @@ To free up the storage, you need to delete all the PVCs manually.
 First, view the PVCs:
 
 ```sh
-kubectl get pvc -l app.kubernetes.io/instance=YOUR_RELEASE_NAME
-kubectl get pvc -l release=YOUR_RELEASE_NAME
+kubectl get pvc -l app.kubernetes.io/instance=camunda
+kubectl get pvc -l release=camunda
 ```
 
 Then delete the ones that you don't want to keep:
 
 ```sh
-kubectl delete pvc -l app.kubernetes.io/instance=YOUR_RELEASE_NAME
-kubectl delete pvc -l release=YOUR_RELEASE_NAME
+kubectl delete pvc -l app.kubernetes.io/instance=camunda
+kubectl delete pvc -l release=camunda
 ```
 
 Or you can delete the related Kubernetes namespace, which contains all PVCs.
@@ -224,7 +195,8 @@ via a separate `values.yaml` file.
 
 Check out the default [values.yaml](values.yaml) file, which contains the same content and documentation.
 
-> **Note**
+> [!NOTE]
+>
 > For more details about deploying Camunda 8 on Kubernetes, please visit the
 > [Helm/Kubernetes installation instructions docs](https://docs.camunda.io/docs/self-managed/platform-deployment/helm-kubernetes/overview/).
 
@@ -232,33 +204,42 @@ Check out the default [values.yaml](values.yaml) file, which contains the same c
 
 ### Web Modeler
 
-> :information_source: Web Modeler Self-Managed is available to Camunda enterprise customers only.
+> [!NOTE]
+>
+> Web Modeler Self-Managed is available to Camunda enterprise customers only.
 
 #### Docker registry
+
 The Docker images for Web Modeler are available in a private registry.
 Enterprise customers either already have credentials to this registry, or they can request access to this registry through their CSM contact at Camunda.
 To enable Kubernetes to pull the images from Camunda's registry, you'll need to:
+
 - [create an image pull secret](https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod) using the provided credentials
 - configure the Web Modeler pods to use the secret:
+
   ```yaml
   webModeler:
     image:
       pullSecrets:
-        - name: <MY_SECRET_NAME>
+        - name: <SECRET_NAME>
    ```
 
 #### Database
+
 Web Modeler requires a PostgreSQL database to store the data.
 You can either:
-- deploy a PostgreSQL instance as part of the Helm release by setting `postgresql.enabled` to `true` (which will enable the [`postgresql` chart dependency](#postgresql-for-web-modeler))
-- configure a connection to an (existing) external database by setting `postgresql.enabled` to `false` and providing the values under `restapi.externalDatabase`
+
+- Deploy a PostgreSQL instance as part of the Helm release by setting `postgresql.enabled` to `true` (which will enable the [postgresql chart dependency](#webmodeler---postgresql-parameters)).
+- Configure a connection to an (existing) external database by setting `postgresql.enabled` to `false` and providing the values under `restapi.externalDatabase`.
 
 #### SMTP server
+
 Web Modeler requires an SMTP server to send (notification) emails to users.
 The SMTP connection can be configured with the values under `restapi.mail`.
 
 #### Updating Environment Variables
-When configuring the `env` options in the settings listed above, the environment variables you specify in values.yaml may show up twice when running `kubectl describe deployment <deployment>`. However, the environment variable specified in values.yaml will have precedence when the pod actually runs. To verify this, you can check the output from the following command:
+
+When configuring the `env` options in the settings listed above, the environment variables you specify in values.yaml may show up twice when running `kubectl describe deployment <deployment>`. However, the environment variable is specified in values.yaml will have precedence when the pod actually runs. To verify this, you can check the output from the following command:
 
 ```bash
 kubectl exec pod/<podName> -- env
@@ -293,10 +274,10 @@ Visit [using secrets in manual installation](https://docs.camunda.io/docs/8.0/se
 
 Camunda 8 Helm chart has a dependency on the [Elasticsearch 8 Helm Chart](https://artifacthub.io/packages/helm/bitnami/elasticsearch). All variables related to Elasticsearch can be set under `elasticsearch`.
 
-> **Note**
+> [!NOTE]
 >
-> The default setup of the Elasticsearch 8 part of Camunda 8 uses nodes have all roles (master, data, coordinating, and ingest).
-> For high-demand deployments, it's recommended to deploy the Elasticsearch master-elegible nodes as master-only nodes.
+> The default setup of the Elasticsearch 8 part of Camunda 8 uses nodes that have all roles (master, data, coordinating, and ingest).
+> For high-demand deployments, it's recommended to deploy the Elasticsearch master-eligible nodes as master-only nodes.
 
 | Section | Parameter | Description | Default |
 |-|-|-|-|
@@ -371,16 +352,16 @@ For development purposes, you might want to deploy and test the charts without c
 To do this you can run the following:
 
 ```sh
- helm install YOUR_RELEASE_NAME --atomic --debug ./charts/camunda-platform
+ helm install camunda --atomic --debug ./charts/camunda-platform
 ```
 
- * `--atomic if set, the installation process deletes the installation on failure. The --wait flag will be set automatically if --atomic is used`
+- `--atomic if set, the installation process deletes the installation on failure. The --wait flag will be set automatically if --atomic is used`
 
- * `--debug enable verbose output`
+- `--debug enable verbose output`
 
-To generate the resources/manifests without really installing them, you can use: 
+To generate the resources/manifests without really installing them, you can use:
 
- * `--dry-run simulate an install`
+- `--dry-run simulate an install`
 
 If you see errors like:
 
@@ -399,7 +380,8 @@ make helm.repos-add
 After this, you can run: `make helm.dependency-update`, which will update and download the dependencies for all charts.
 
 The execution should look like this:
-```
+
+```text
 $ make helm.dependency-update
 helm dependency update charts/camunda-platform
 Hang tight while we grab the latest from your chart repositories...
@@ -431,58 +413,75 @@ Please see the corresponding [release guide](../../RELEASE.md) to find out how t
 
 ### Global parameters
 
-| Name                                             | Description                                                                                                                                              | Value                                                 |
-| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| `global`                                         |                                                                                                                                                          |                                                       |
-| `global.multitenancy`                            |                                                                                                                                                          |                                                       |
-| `global.multitenancy.enabled`                    | if true, then enable multitenancy in all applicable components.                                                                                          | `false`                                               |
-| `global.annotations`                             | Annotations can be used to define common annotations, which should be applied to all deployments                                                         | `{}`                                                  |
-| `global.labels.app`                              | Name of the application                                                                                                                                  | `camunda-platform`                                    |
-| `global.image.registry`                          | Can be used to set container image registry.                                                                                                             | `""`                                                  |
-| `global.image.tag`                               | defines the tag / version which should be used in the most of the apps.                                                                                  | `8.3.5`                                               |
-| `global.image.pullPolicy`                        | defines the image pull policy which should be used https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy                              | `IfNotPresent`                                        |
-| `global.image.pullSecrets`                       | can be used to configure image pull secrets https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod                  | `[]`                                                  |
-| `global.ingress`                                 |                                                                                                                                                          |                                                       |
-| `global.ingress.enabled`                         | if true, an ingress resource is deployed. Only useful if an ingress controller is available, like Ingress-NGINX.                                         | `false`                                               |
-| `global.ingress.className`                       | Ingress.className defines the class or configuration of ingress which should be used by the controller                                                   | `nginx`                                               |
-| `global.ingress.annotations`                     | defines the ingress related annotations, consumed mostly by the ingress controller                                                                       | `{}`                                                  |
-| `global.ingress.host`                            | If not specified the rules applies to all inbound http traffic, if specified the rule applies to that host.                                              | `""`                                                  |
-| `global.ingress.tls`                             | configuration for tls on the ingress resource https://kubernetes.io/docs/concepts/services-networking/ingress/#tls                                       |                                                       |
-| `global.ingress.tls.enabled`                     | if true, then tls is configured on the ingress resource. If enabled the Ingress.host need to be defined.                                                 | `false`                                               |
-| `global.ingress.tls.secretName`                  | defines the secret name which contains the TLS private key and certificate                                                                               | `camunda-platform`                                    |
-| `global.elasticsearch`                           |                                                                                                                                                          |                                                       |
-| `global.elasticsearch.disableExporter`           | if true, disables the elastic exporter in zeebe                                                                                                          | `false`                                               |
-| `global.elasticsearch.url`                       | can be used to configure the URL to access elasticsearch, if not set services fallback to host and port configuration                                    | `nil`                                                 |
-| `global.elasticsearch.protocol`                  | defines the elasticsearch access protocol, by default HTTP.                                                                                              | `http`                                                |
-| `global.elasticsearch.host`                      | Elasticsearch.host defines the elasticsearch host, ideally the service name inside the namespace                                                         | `{{ .Release.Name }}-elasticsearch`                   |
-| `global.elasticsearch.port`                      | Elasticsearch.port defines the elasticsearch port, under which elasticsearch can be accessed                                                             | `9200`                                                |
-| `global.elasticsearch.clusterName`               | Elasticsearch.clusterName defines the cluster name which is used by Elasticsearch                                                                        | `elasticsearch`                                       |
-| `global.elasticsearch.prefix`                    | Elasticsearch.prefix defines the prefix which is used by the Zeebe Elasticsearch Exporter to create Elasticsearch indexes                                | `zeebe-record`                                        |
-| `global.zeebeClusterName`                        | ZeebeClusterName defines the cluster name for the Zeebe cluster. All Zeebe pods get this prefix in their name and the brokers uses that as cluster name. | `{{ .Release.Name }}-zeebe`                           |
-| `global.zeebePort`                               | defines the port which is used for the Zeebe Gateway. This port accepts the GRPC Client messages and forwards them to the Zeebe Brokers.                 | `26500`                                               |
-| `global.identity.keycloak.internal`              | It's useful for using existing Keycloak in another namespace with and access it with the combined Ingress.                                               | `false`                                               |
-| `global.identity.keycloak.url`                   | can be used incorporate with "identity.keycloak.enabled: false" to use your own Keycloak instead of the one comes with Camunda Helm chart.               | `{}`                                                  |
-| `global.identity.keycloak.contextPath`           | In Keycloak v16.x.x it's hard-coded as '/auth', but in v19.x.x it's '/'.                                                                                 | `/auth`                                               |
-| `global.identity.keycloak.realm`                 | defines Keycloak realm path used for Camunda.                                                                                                            | `/realms/camunda-platform`                            |
-| `global.identity.keycloak.auth`                  | same as "identity.keycloak.auth" but it's used for existing Keycloak.                                                                                    | `{}`                                                  |
-| `global.identity.auth`                           | configuration, to configure identity authentication setup                                                                                                |                                                       |
-| `global.identity.auth.enabled`                   | if true, enables the identity authentication otherwise basic-auth will be used on all services.                                                          | `true`                                                |
-| `global.identity.auth.publicIssuerUrl`           | Can be overwritten if ingress is in use and an external IP is available.                                                                                 | `http://localhost:18080/auth/realms/camunda-platform` |
-| `global.identity.auth.connectors`                | configuration to configure Connectors authentication specifics on global level, which can be accessed by other sub-charts                                |                                                       |
-| `global.identity.auth.connectors.existingSecret` | can be used to use an own existing secret. If not set a random secret is generated.                                                                      | `""`                                                  |
-| `global.identity.auth.operate`                   | configuration to configure Operate authentication specifics on global level, which can be accessed by other sub-charts                                   |                                                       |
-| `global.identity.auth.operate.existingSecret`    | can be used to reference an existing secret. If not set, a random secret is generated.                                                                   | `nil`                                                 |
-| `global.identity.auth.operate.redirectUrl`       | defines the redirect URL, which is used by Keycloak to access Operate.                                                                                   | `http://localhost:8081`                               |
-| `global.identity.auth.tasklist`                  | configuration to configure Tasklist authentication specifics on global level, which can be accessed by other sub-charts                                  |                                                       |
-| `global.identity.auth.tasklist.existingSecret`   | can be used to use an own existing secret. If not set a random secret is generated.                                                                      | `nil`                                                 |
-| `global.identity.auth.tasklist.redirectUrl`      | defines the root (or redirect) URL, which is used by Keycloak to access Tasklist.                                                                        | `http://localhost:8082`                               |
-| `global.identity.auth.optimize`                  | configuration to configure Optimize authentication specifics on global level, which can be accessed by other sub-charts                                  |                                                       |
-| `global.identity.auth.optimize.existingSecret`   | can be used to use an own existing secret. If not set a random secret is generated.                                                                      | `nil`                                                 |
-| `global.identity.auth.optimize.redirectUrl`      | defines the root (or redirect) URL, which is used by Keycloak to access Optimize.                                                                        | `http://localhost:8083`                               |
-| `global.identity.auth.webModeler`                | configuration to configure Web Modeler authentication specifics on global level, which can be accessed by other sub-charts                               |                                                       |
-| `global.identity.auth.webModeler.redirectUrl`    | defines the root URL which is used by Keycloak to access Web Modeler.                                                                                    | `http://localhost:8084`                               |
-| `global.identity.auth.zeebe`                     | configuration to configure Zeebe authentication specifics on global level, which can be accessed by other sub-charts                                     |                                                       |
-| `global.identity.auth.zeebe.existingSecret`      | can be used to use an own existing secret. If not set a random secret is generated.                                                                      | `""`                                                  |
+| Name                                                | Description                                                                                                                                              | Value                                                 |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| `global`                                            |                                                                                                                                                          |                                                       |
+| `global.multitenancy`                               |                                                                                                                                                          |                                                       |
+| `global.multitenancy.enabled`                       | if true, then enable multitenancy in all applicable components.                                                                                          | `false`                                               |
+| `global.annotations`                                | Annotations can be used to define common annotations, which should be applied to all deployments                                                         | `{}`                                                  |
+| `global.labels.app`                                 | Name of the application                                                                                                                                  | `camunda-platform`                                    |
+| `global.image.registry`                             | Can be used to set container image registry.                                                                                                             | `""`                                                  |
+| `global.image.tag`                                  | defines the tag / version which should be used in the most of the apps.                                                                                  | `8.4.0`                                               |
+| `global.image.pullPolicy`                           | defines the image pull policy which should be used https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy                              | `IfNotPresent`                                        |
+| `global.image.pullSecrets`                          | can be used to configure image pull secrets https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod                  | `[]`                                                  |
+| `global.ingress`                                    |                                                                                                                                                          |                                                       |
+| `global.ingress.enabled`                            | if true, an ingress resource is deployed. Only useful if an ingress controller is available, like Ingress-NGINX.                                         | `false`                                               |
+| `global.ingress.className`                          | Ingress.className defines the class or configuration of ingress which should be used by the controller                                                   | `nginx`                                               |
+| `global.ingress.annotations`                        | defines the ingress related annotations, consumed mostly by the ingress controller                                                                       | `{}`                                                  |
+| `global.ingress.host`                               | If not specified the rules applies to all inbound http traffic, if specified the rule applies to that host.                                              | `""`                                                  |
+| `global.ingress.tls`                                | configuration for tls on the ingress resource https://kubernetes.io/docs/concepts/services-networking/ingress/#tls                                       |                                                       |
+| `global.ingress.tls.enabled`                        | if true, then tls is configured on the ingress resource. If enabled the Ingress.host need to be defined.                                                 | `false`                                               |
+| `global.ingress.tls.secretName`                     | defines the secret name which contains the TLS private key and certificate                                                                               | `camunda-platform`                                    |
+| `global.elasticsearch`                              |                                                                                                                                                          |                                                       |
+| `global.elasticsearch.disableExporter`              | if true, disables the elastic exporter in zeebe                                                                                                          | `false`                                               |
+| `global.elasticsearch.url`                          | can be used to configure the URL to access elasticsearch, if not set services fallback to host and port configuration                                    | `nil`                                                 |
+| `global.elasticsearch.protocol`                     | defines the elasticsearch access protocol, by default HTTP.                                                                                              | `http`                                                |
+| `global.elasticsearch.host`                         | Elasticsearch.host defines the elasticsearch host, ideally the service name inside the namespace                                                         | `{{ .Release.Name }}-elasticsearch`                   |
+| `global.elasticsearch.port`                         | Elasticsearch.port defines the elasticsearch port, under which elasticsearch can be accessed                                                             | `9200`                                                |
+| `global.elasticsearch.clusterName`                  | Elasticsearch.clusterName defines the cluster name which is used by Elasticsearch                                                                        | `elasticsearch`                                       |
+| `global.elasticsearch.prefix`                       | Elasticsearch.prefix defines the prefix which is used by the Zeebe Elasticsearch Exporter to create Elasticsearch indexes                                | `zeebe-record`                                        |
+| `global.zeebeClusterName`                           | ZeebeClusterName defines the cluster name for the Zeebe cluster. All Zeebe pods get this prefix in their name and the brokers uses that as cluster name. | `{{ .Release.Name }}-zeebe`                           |
+| `global.zeebePort`                                  | defines the port which is used for the Zeebe Gateway. This port accepts the GRPC Client messages and forwards them to the Zeebe Brokers.                 | `26500`                                               |
+| `global.identity.keycloak.internal`                 | It's useful for using existing Keycloak in another namespace with and access it with the combined Ingress.                                               | `false`                                               |
+| `global.identity.keycloak.url`                      | can be used incorporate with "identity.keycloak.enabled: false" to use your own Keycloak instead of the one comes with Camunda Helm chart.               | `{}`                                                  |
+| `global.identity.keycloak.contextPath`              | In Keycloak v16.x.x it's hard-coded as '/auth', but in v19.x.x it's '/'.                                                                                 | `/auth`                                               |
+| `global.identity.keycloak.realm`                    | defines Keycloak realm path used for Camunda.                                                                                                            | `/realms/camunda-platform`                            |
+| `global.identity.keycloak.auth`                     | same as "identity.keycloak.auth" but it's used for existing Keycloak.                                                                                    | `{}`                                                  |
+| `global.identity.auth`                              | configuration, to configure identity authentication setup                                                                                                |                                                       |
+| `global.identity.auth.enabled`                      | if true, enables the identity authentication otherwise basic-auth will be used on all services.                                                          | `true`                                                |
+| `global.identity.auth.issuer`                       | defines the issuer name, which is used by the services to validate the JWT tokens.                                                                       | `""`                                                  |
+| `global.identity.auth.issuerBackendUrl`             | defines the issuer backend URL, which is used by the services to validate the JWT tokens in a container to container context.                            | `""`                                                  |
+| `global.identity.auth.tokenUrl`                     | defines the token URL, which is used by the services to request JWT tokens.                                                                              | `""`                                                  |
+| `global.identity.auth.jwksUrl`                      | defines the JWKS URL, which is used by the services to validate the JWT tokens.                                                                          | `""`                                                  |
+| `global.identity.auth.type`                         | defines the type of authentication which should be used. Defaults to Keycloak                                                                            | `KEYCLOAK`                                            |
+| `global.identity.auth.publicIssuerUrl`              | Can be overwritten if ingress is in use and an external IP is available.                                                                                 | `http://localhost:18080/auth/realms/camunda-platform` |
+| `global.identity.auth.connectors`                   | configuration to configure Connectors authentication specifics on global level, which can be accessed by other sub-charts                                |                                                       |
+| `global.identity.auth.connectors.existingSecret`    | can be used to use an own existing secret. If not set a random secret is generated.                                                                      | `""`                                                  |
+| `global.identity.auth.operate`                      | configuration to configure Operate authentication specifics on global level, which can be accessed by other sub-charts                                   |                                                       |
+| `global.identity.auth.operate.clientId`             | defines the client id, which is used by Operate in authentication flows.                                                                                 | `operate`                                             |
+| `global.identity.auth.operate.audience`             | defines the audience, which is used by Operate.                                                                                                          | `operate-api`                                         |
+| `global.identity.auth.operate.existingSecret`       | can be used to reference an existing secret. If not set, a random secret is generated.                                                                   | `nil`                                                 |
+| `global.identity.auth.operate.redirectUrl`          | defines the redirect URL, which is used by Keycloak to access Operate.                                                                                   | `http://localhost:8081`                               |
+| `global.identity.auth.tasklist`                     | configuration to configure Tasklist authentication specifics on global level, which can be accessed by other sub-charts                                  |                                                       |
+| `global.identity.auth.tasklist.clientId`            | defines the client id, which is used by Tasklist in authentication flows.                                                                                | `tasklist`                                            |
+| `global.identity.auth.tasklist.audience`            | defines the audience, which is used by Tasklist.                                                                                                         | `tasklist-api`                                        |
+| `global.identity.auth.tasklist.existingSecret`      | can be used to use an own existing secret. If not set a random secret is generated.                                                                      | `nil`                                                 |
+| `global.identity.auth.tasklist.redirectUrl`         | defines the root (or redirect) URL, which is used by Keycloak to access Tasklist.                                                                        | `http://localhost:8082`                               |
+| `global.identity.auth.optimize`                     | configuration to configure Optimize authentication specifics on global level, which can be accessed by other sub-charts                                  |                                                       |
+| `global.identity.auth.optimize.clientId`            | defines the client id, which is used by Optimize in authentication flows.                                                                                | `optimize`                                            |
+| `global.identity.auth.optimize.audience`            | defines the audience, which is used by Optimize.                                                                                                         | `optimize-api`                                        |
+| `global.identity.auth.optimize.existingSecret`      | can be used to use an own existing secret. If not set a random secret is generated.                                                                      | `nil`                                                 |
+| `global.identity.auth.optimize.redirectUrl`         | defines the root (or redirect) URL, which is used by Keycloak to access Optimize.                                                                        | `http://localhost:8083`                               |
+| `global.identity.auth.webModeler`                   | configuration to configure Web Modeler authentication specifics on global level, which can be accessed by other sub-charts                               |                                                       |
+| `global.identity.auth.webModeler.clientId`          | defines the client id, which is used by Web Modeler in authentication flows.                                                                             | `web-modeler`                                         |
+| `global.identity.auth.webModeler.clientApiAudience` | defines the audience which is used by Web Modeler's client API.                                                                                          | `web-modeler-api`                                     |
+| `global.identity.auth.webModeler.publicApiAudience` | defines the audience which is used by Web Modeler's public API.                                                                                          | `web-modeler-public-api`                              |
+| `global.identity.auth.webModeler.redirectUrl`       | defines the root URL which is used by Keycloak to access Web Modeler.                                                                                    | `http://localhost:8084`                               |
+| `global.identity.auth.zeebe`                        | configuration to configure Zeebe authentication specifics on global level, which can be accessed by other sub-charts                                     |                                                       |
+| `global.identity.auth.zeebe.clientId`               | defines the client id, which is used by Zeebe in authentication flows.                                                                                   | `zeebe`                                               |
+| `global.identity.auth.zeebe.existingSecret`         | can be used to use an own existing secret. If not set a random secret is generated.                                                                      | `""`                                                  |
+| `global.identity.auth.zeebe.audience`               | defines the audience, which is used by Zeebe.                                                                                                            | `zeebe-api`                                           |
+| `global.identity.auth.zeebe.tokenScope`             | defines the token scope, which is used by Zeebe.                                                                                                         | `nil`                                                 |
 
 ### Zeebe Parameters
 
@@ -798,8 +797,6 @@ Please see the corresponding [release guide](../../RELEASE.md) to find out how t
 | `tasklist.service`                                           | configuration to configure the tasklist service.                                                                                                                             |                              |
 | `tasklist.service.type`                                      | defines the type of the service https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types                                           | `ClusterIP`                  |
 | `tasklist.service.port`                                      | defines the port of the service, where the tasklist web application will be available                                                                                        | `80`                         |
-| `tasklist.graphqlPlaygroundEnabled`                          | if true, enables the graphql playground                                                                                                                                      | `""`                         |
-| `tasklist.graphqlPlaygroundRequestCredentials`               | can be set to include the credentials in each request, should be set to "include" if graphql playground is enabled                                                           | `""`                         |
 | `tasklist.identity`                                          | configures app user management.                                                                                                                                              |                              |
 | `tasklist.identity.userAccessRestrictions.enabled`           | if true, enables the identity user access restrictions                                                                                                                       | `true`                       |
 | `tasklist.extraVolumes`                                      | can be used to define extra volumes for the Tasklist pods, useful for tls and self-signed certificates                                                                       | `[]`                         |
@@ -869,7 +866,7 @@ Please see the corresponding [release guide](../../RELEASE.md) to find out how t
 | `optimize.image`                                             | configuration to configure the Optimize image specifics                                                                                                                      |                             |
 | `optimize.image.registry`                                    | can be used to set container image registry                                                                                                                                  | `""`                        |
 | `optimize.image.repository`                                  | defines which image repository to use                                                                                                                                        | `camunda/optimize`          |
-| `optimize.image.tag`                                         | can be set to overwrite the global tag, which should be used in that chart                                                                                                   | `8.3.5`                     |
+| `optimize.image.tag`                                         | can be set to overwrite the global tag, which should be used in that chart                                                                                                   | `8.4.0`                     |
 | `optimize.image.pullSecrets`                                 | can be used to configure image pull secrets https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod                                      | `[]`                        |
 | `optimize.migration`                                         | configuration for Optimize migration                                                                                                                                         |                             |
 | `optimize.migration.enabled`                                 | if true, run Optimize migration script as an init container                                                                                                                  | `true`                      |
@@ -1092,7 +1089,7 @@ Please see the corresponding [release guide](../../RELEASE.md) to find out how t
 | `identity.keycloak.initContainers[0].volumeMounts[0].name`                               |                                                                                                                               | `camunda-theme`                                                                                                                                                      |
 | `identity.keycloak.initContainers[0].volumeMounts[0].mountPath`                          |                                                                                                                               | `/mnt`                                                                                                                                                               |
 | `identity.keycloak.initContainers[1].name`                                               |                                                                                                                               | `copy-configs`                                                                                                                                                       |
-| `identity.keycloak.initContainers[1].image`                                              |                                                                                                                               | `bitnami/keycloak:{{ .Values.image.tag }}`                                                                                                                           |
+| `identity.keycloak.initContainers[1].image`                                              |                                                                                                                               | `{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}`                                                                                |
 | `identity.keycloak.initContainers[1].imagePullPolicy`                                    |                                                                                                                               | `Always`                                                                                                                                                             |
 | `identity.keycloak.initContainers[1].command`                                            |                                                                                                                               | `["sh","-c","cp -ar /opt/bitnami/keycloak/conf/* /config && cp -a /opt/bitnami/keycloak/lib/quarkus/* /quarkus"]`                                                    |
 | `identity.keycloak.initContainers[1].securityContext.privileged`                         |                                                                                                                               | `false`                                                                                                                                                              |
@@ -1146,7 +1143,7 @@ Please see the corresponding [release guide](../../RELEASE.md) to find out how t
 | `webModeler.nameOverride`      | can be used to partly override the name of the Web Modeler resources (names will still be prefixed with the release name)                      | `""`                     |
 | `webModeler.image`             | configuration of the Web Modeler Docker images                                                                                                 |                          |
 | `webModeler.image.registry`    | can be used to set the Docker registry for the Web Modeler images (overwrites global.image.registry)                                           | `registry.camunda.cloud` |
-| `webModeler.image.tag`         | can be used to set the Docker image tag for the Web Modeler images (overwrites global.image.tag)                                               | `8.3.3`                  |
+| `webModeler.image.tag`         | can be used to set the Docker image tag for the Web Modeler images (overwrites global.image.tag)                                               | `8.4.1`                  |
 | `webModeler.image.pullSecrets` | can be used to configure image pull secrets, see https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod   | `[]`                     |
 | `webModeler.contextPath`       | can be used to make Web Modeler available on a custom sub-path. This is mainly used to run the Camunda web applications under a single domain. | `""`                     |
 
@@ -1418,7 +1415,7 @@ Please see the corresponding [release guide](../../RELEASE.md) to find out how t
 | `connectors.image`                                             | configuration to configure the Connectors image specifics                                                                                                                    |                               |
 | `connectors.image.registry`                                    | can be used to set container image registry.                                                                                                                                 | `""`                          |
 | `connectors.image.repository`                                  | defines which image repository to use                                                                                                                                        | `camunda/connectors-bundle`   |
-| `connectors.image.tag`                                         | can be set to overwrite the global tag, which should be used in that chart                                                                                                   | `8.3.3`                       |
+| `connectors.image.tag`                                         | can be set to overwrite the global tag, which should be used in that chart                                                                                                   | `8.4.3`                       |
 | `connectors.image.pullSecrets`                                 | can be used to configure image pull secrets https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod                                      | `[]`                          |
 | `connectors.sidecars`                                          | can be used to attach extra containers to the connectors deployment                                                                                                          | `[]`                          |
 | `connectors.initContainers`                                    | can be used to set up extra init containers to the connectors deployment                                                                                                     | `[]`                          |
@@ -1500,7 +1497,7 @@ Please see the corresponding [release guide](../../RELEASE.md) to find out how t
 | `elasticsearch`                                  |              |                                   |
 | `elasticsearch.enabled`                          |              | `true`                            |
 | `elasticsearch.image.repository`                 |              | `bitnami/elasticsearch`           |
-| `elasticsearch.image.tag`                        |              | `8.8.2`                           |
+| `elasticsearch.image.tag`                        |              | `8.9.2`                           |
 | `elasticsearch.extraVolumes[0].name`             |              | `tmp`                             |
 | `elasticsearch.extraVolumes[0].emptyDir`         |              | `{}`                              |
 | `elasticsearch.extraVolumes[1].name`             |              | `logs`                            |

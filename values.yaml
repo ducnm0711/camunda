@@ -12,26 +12,13 @@ global:
     tls:
       enabled: false
       secretName: camunda-platform
-  postgresql:
-    auth:
-      password: pQLRNDapH7
+  # postgresql:
+  #   auth:
+  #     password: pQLRNDapH7
 
   elasticsearch:
-    ## @param global.elasticsearch.disableExporter if true, disables the elastic exporter in zeebe
-    disableExporter: false
-    ## @param global.elasticsearch.url can be used to configure the URL to access elasticsearch, if not set services fallback to host and port configuration
-    url:
-    ## @param global.elasticsearch.protocol defines the elasticsearch access protocol, by default HTTP.
-    protocol: http
-    ## @param global.elasticsearch.host Elasticsearch.host defines the elasticsearch host, ideally the service name inside the namespace
-    host: "{{ .Release.Name }}-elasticsearch"
-    ## @param global.elasticsearch.port Elasticsearch.port defines the elasticsearch port, under which elasticsearch can be accessed
-    port: 9200
-    ## @param global.elasticsearch.clusterName Elasticsearch.clusterName defines the cluster name which is used by Elasticsearch
-    clusterName: "elasticsearch"
-    ## @param global.elasticsearch.prefix Elasticsearch.prefix defines the prefix which is used by the Zeebe Elasticsearch Exporter to create Elasticsearch indexes
-    prefix: zeebe-record
-  ## @param global.zeebeClusterName ZeebeClusterName defines the cluster name for the Zeebe cluster. All Zeebe pods get this prefix in their name and the brokers uses that as cluster name.
+    disableExporter: true
+
   zeebeClusterName: "{{ .Release.Name }}-zeebe"
   ## @param global.zeebePort defines the port which is used for the Zeebe Gateway. This port accepts the GRPC Client messages and forwards them to the Zeebe Brokers.
   zeebePort: 26500
@@ -52,7 +39,6 @@ global:
     auth:
       ## @param global.identity.auth.enabled if true, enables the identity authentication otherwise basic-auth will be used on all services.
       enabled: true
-
       ## @param global.identity.auth.issuer defines the issuer name, which is used by the services to validate the JWT tokens.
       issuer: ""
       ## @param global.identity.auth.issuerBackendUrl defines the issuer backend URL, which is used by the services to validate the JWT tokens in a container to container context.
@@ -72,41 +58,6 @@ global:
       ## @extra global.identity.auth.connectors configuration to configure Connectors authentication specifics on global level, which can be accessed by other sub-charts
       connectors:
         existingSecret: 0u5uG0hixw
-      operate:
-        clientId: operate
-        audience: operate-api
-        existingSecret: r7XQHDZ3JG
-        redirectUrl: "http://localhost:8081"
-      tasklist:
-        clientId: tasklist
-        audience: tasklist-api
-        existingSecret: DBpkH3iadb
-        redirectUrl: "http://localhost:8082"
-
-      ## @extra global.identity.auth.optimize configuration to configure Optimize authentication specifics on global level, which can be accessed by other sub-charts
-      optimize:
-        clientId: optimize
-        audience: optimize-api
-        existingSecret: fBUpPWbnDu
-        redirectUrl: "http://localhost:8083"
-
-      ## @extra global.identity.auth.webModeler configuration to configure Web Modeler authentication specifics on global level, which can be accessed by other sub-charts
-      webModeler:
-        ## @param global.identity.auth.webModeler.clientId defines the client id, which is used by Web Modeler in authentication flows.
-        clientId: web-modeler
-        ## @param global.identity.auth.webModeler.clientApiAudience defines the audience which is used by Web Modeler's client API.
-        clientApiAudience: web-modeler-api
-        ## @param global.identity.auth.webModeler.publicApiAudience defines the audience which is used by Web Modeler's public API.
-        publicApiAudience: web-modeler-public-api
-        ## @param global.identity.auth.webModeler.redirectUrl defines the root URL which is used by Keycloak to access Web Modeler.
-        # Should be publicly accessible, the default value works if a port-forward to Web Modeler is created to 8084.
-        # Can be overwritten if ingress is in use and an external IP is available.
-        redirectUrl: "http://localhost:8084"
-
-      ## global.identity.auth.console configuration to configure Console authentication specifics on global level, which can be accessed by other sub-charts
-      console:
-        existingSecret: mF3ncJoZea
-        redirectUrl: "http://localhost:8080"
 
       ## @extra global.identity.auth.zeebe configuration to configure Zeebe authentication specifics on global level, which can be accessed by other sub-charts
       zeebe:
@@ -206,144 +157,15 @@ zeebe-gateway:
       enabled: true
       secretName: camunda-platform-zeebe-gateway
 
-## @section Operate Parameters
-## @extra.operate configuration for the Operate sub chart.
 operate:
-  ## @param operate.enabled if true, the Operate deployment and its related resources are deployed via a helm release
-  enabled: true
-  resources:
-    requests:
-      cpu: 100m
-      memory: 500Mi
-    limits:
-      cpu: 200m
-      memory: 1000Mi
+  enabled: false
 
-  ingress:
-    enabled: true
-    className: nginx
-    annotations:
-      ingress.kubernetes.io/rewrite-target: "/"
-      nginx.ingress.kubernetes.io/ssl-redirect: "false"
-      nginx.ingress.kubernetes.io/proxy-buffer-size: "128k"
-      cert-manager.io/cluster-issuer: le-linshare-dev
-      kubernetes.io/tls-acme: "true"
-    path: /
-    host: operate.camunda.integration-linshare.org
-    tls:
-      enabled: true
-      ## @param operate.ingress.tls.secretName defines the secret name which contains the TLS private key and certificate
-      secretName: camunda-platform-operate
-
-## @section Tasklist Parameters
-# Tasklist configuration for the tasklist sub chart.
 tasklist:
-  ## @param tasklist.enabled if true, the tasklist deployment and its related resources are deployed via a helm release
-  enabled: true
+  enabled: false
 
-  ## @extra tasklist.image configuration to configure the tasklist image specifics
-  image:
-    ## @param tasklist.image.registry can be used to set container image registry.
-    registry: ""
-    ## @param tasklist.image.repository defines which image repository to use
-    repository: camunda/tasklist
-    ## @param tasklist.image.tag can be set to overwrite the global tag, which should be used in that chart
-    tag:
-    ## @param tasklist.image.pullSecrets can be used to configure image pull secrets https://kubernetes.io/docs/concepts/containers/images/#specifying-imagepullsecrets-on-a-pod
-    pullSecrets: []
-
-  ## @param tasklist.sidecars can be used to attach extra containers to the tasklist deployment
-  sidecars: []
-  ## @param tasklist.initContainers can be used to set up extra init containers for the taskList pods, useful for additional exporters
-  initContainers: []
-  # contextPath: "/tasklist"
-  ## @param tasklist.contextPath can be used to make Tasklist web application works on a custom sub-path. This is mainly used to run Camunda web applications under a single domain.
-  contextPath: ""
-
-  ## @param tasklist.env can be used to set extra environment variables on each Tasklist container
-  env: []
-
-  ## @param tasklist.podAnnotations can be used to define extra Tasklist pod annotations
-  podAnnotations: {}
-  ## @param tasklist.podLabels can be used to define extra tasklist pod labels
-  podLabels: {}
-
-  ## @extra tasklist.configMap configuration which will be applied to the mounted config map.
-  configMap:
-    ## @param tasklist.configMap.defaultMode can be used to set permissions on created files by default. Must be an octal value between 0000 and 0777 or a decimal value between 0 and 511.
-    # See https://github.com/kubernetes/api/blob/master/core/v1/types.go#L1615-L1623
-    defaultMode: 0744
-  ## @param tasklist.command can be used to override the default command provided by the container image. See https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/
-  command: []
-  ## @extra tasklist.service configuration to configure the tasklist service.
-  service:
-    ## @param tasklist.service.type defines the type of the service https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
-    type: ClusterIP
-    ## @param tasklist.service.port defines the port of the service, where the tasklist web application will be available
-    port: 80
-
-  ## @extra tasklist.identity configures app user management.
-  identity:
-    userAccessRestrictions:
-      ## @param tasklist.identity.userAccessRestrictions.enabled if true, enables the identity user access restrictions
-      enabled: true
-  resources:
-    requests:
-      cpu: 100m
-      memory: 500Mi
-    limits:
-      cpu: 200m
-      memory: 1000Mi
-
-  ingress:
-    enabled: true
-    className: nginx
-    annotations:
-      ingress.kubernetes.io/rewrite-target: "/"
-      nginx.ingress.kubernetes.io/ssl-redirect: "false"
-      nginx.ingress.kubernetes.io/proxy-buffer-size: "128k"
-      cert-manager.io/cluster-issuer: le-linshare-dev
-      kubernetes.io/tls-acme: "true"
-    path: /
-    host: tasklist.camunda.integration-linshare.org
-    tls:
-      enabled: true
-      secretName: camunda-platform-tasklist
-
-  # Retention can be used to define the data in Elasticsearch (ILM).
-  retention:
-    ## @param tasklist.retention.enabled if true, the ILM Policy is created and applied to the index templates.
-    enabled: false
-    ## @param tasklist.retention.minimumAge defines how old the data must be, before the data is deleted as a duration.
-    minimumAge: 30d
-
-## @section Optimize Parameters
-# Optimize configuration for the Optimize sub chart.
 optimize:
-  ## @param optimize.enabled if true, the Optimize deployment and its related resources are deployed via a helm release
-  enabled: true
-  resources:
-    requests:
-      cpu: 100m
-      memory: 500Mi
-    limits:
-      cpu: 200m
-      memory: 1000Mi
+  enabled: false
 
-  ingress:
-    enabled: true
-    className: nginx
-    annotations:
-      ingress.kubernetes.io/rewrite-target: "/"
-      nginx.ingress.kubernetes.io/ssl-redirect: "false"
-      nginx.ingress.kubernetes.io/proxy-buffer-size: "128k"
-      cert-manager.io/cluster-issuer: le-linshare-dev
-      kubernetes.io/tls-acme: "true"
-    path: /
-    host: optimize.camunda.integration-linshare.org
-    tls:
-      enabled: true
-      secretName: camunda-platform-optimize
 
 ## @section Identity Parameters
 # Identity configuration for the identity sub chart.
@@ -723,82 +545,9 @@ connectors:
       enabled: true
       secretName: camunda-platform-connectors
 
-## Console Parameters - WARNING: Console is currently under development and should not be used yet.
+
 console:
   enabled: false
-
-## @extra elasticsearch
-elasticsearch:
-  ## @param elasticsearch.enabled
-  enabled: true
-  # https://hub.docker.com/r/bitnami/elasticsearch/tags
-  image:
-    ## @param elasticsearch.image.repository
-    repository: bitnami/elasticsearch
-    ## @param elasticsearch.image.tag
-    tag: 8.9.2
-  ## @param elasticsearch.extraVolumes[0].name
-  ## @param elasticsearch.extraVolumes[0].emptyDir
-  ## @param elasticsearch.extraVolumes[1].name
-  ## @param elasticsearch.extraVolumes[1].emptyDir
-  ## @param elasticsearch.extraVolumes[2].name
-  ## @param elasticsearch.extraVolumes[2].emptyDir
-  extraVolumes:
-  - name: tmp
-    emptyDir: {}
-  - name: logs
-    emptyDir: {}
-  - name: config-dir
-    emptyDir: {}
-  ## @param elasticsearch.extraVolumeMounts[0].mountPath
-  ## @param elasticsearch.extraVolumeMounts[0].name
-  ## @param elasticsearch.extraVolumeMounts[1].mountPath
-  ## @param elasticsearch.extraVolumeMounts[1].name
-  ## @param elasticsearch.extraVolumeMounts[2].mountPath
-  ## @param elasticsearch.extraVolumeMounts[2].name
-  extraVolumeMounts:
-  - mountPath: /tmp
-    name: tmp
-  - mountPath: /usr/share/elasticsearch/logs
-    name: logs
-  - mountPath: /usr/share/elasticsearch/config
-    name: config-dir
-  master:
-    ## @param elasticsearch.master.masterOnly
-    masterOnly: false
-    ## @param elasticsearch.master.heapSize
-    heapSize: 1024m
-    persistence:
-      ## @param elasticsearch.master.persistence.size
-      size: 5Gi
-    resources:
-      requests:
-        ## @param elasticsearch.master.resources.requests.cpu cpu request
-        cpu: 1
-        ## @param elasticsearch.master.resources.requests.memory request
-        memory: 2Gi
-      limits:
-        ## @param elasticsearch.master.resources.limits.cpu cpu limit
-        cpu: 2
-        ## @param elasticsearch.master.resources.limits.memory memory limit
-        memory: 2Gi
-    extraEnvVars:
-    ## @param elasticsearch.master.extraEnvVars[0].name env
-    - name: ELASTICSEARCH_ENABLE_REST_TLS
-    ## @param elasticsearch.master.extraEnvVars[0].value env value
-      value: "false"
-  sysctlImage:
-  ## @param elasticsearch.sysctlImage.enabled
-    enabled: true
-  data:
-    ## @param elasticsearch.data.replicaCount
-    replicaCount: 0
-  coordinating:
-    ## @param elasticsearch.coordinating.replicaCount
-    replicaCount: 0
-  ingest:
-    ## @param elasticsearch.ingest.enabled
-    enabled: false
 
 prometheusServiceMonitor:
   enabled: false
