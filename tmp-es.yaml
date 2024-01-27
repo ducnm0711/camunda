@@ -1,0 +1,1261 @@
+---
+# Source: camunda-platform/templates/operate/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: camunda-8-operate
+  labels:
+    app: camunda-platform
+    app.kubernetes.io/name: camunda-platform
+    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: camunda-platform
+    helm.sh/chart: camunda-platform-9.0.2
+    app.kubernetes.io/version: "8.4.0"
+    app.kubernetes.io/component: operate
+---
+# Source: camunda-platform/templates/tasklist/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: camunda-8-tasklist
+  labels:
+    app: camunda-platform
+    app.kubernetes.io/name: camunda-platform
+    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: camunda-platform
+    helm.sh/chart: camunda-platform-9.0.2
+    app.kubernetes.io/version: "8.4.0"
+    app.kubernetes.io/component: tasklist
+---
+# Source: camunda-platform/templates/zeebe-gateway/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: camunda-8-zeebe-gateway
+  labels:
+    app: camunda-platform
+    app.kubernetes.io/name: camunda-platform
+    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: camunda-platform
+    helm.sh/chart: camunda-platform-9.0.2
+    app.kubernetes.io/version: "8.4.0"
+    app.kubernetes.io/component: zeebe-gateway
+---
+# Source: camunda-platform/templates/zeebe/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: camunda-8-zeebe
+  labels:
+    app: camunda-platform
+    app.kubernetes.io/name: camunda-platform
+    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: camunda-platform
+    helm.sh/chart: camunda-platform-9.0.2
+    app.kubernetes.io/version: "8.4.0"
+    app.kubernetes.io/component: zeebe-broker
+---
+# Source: camunda-platform/templates/camunda/configmap-release.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: camunda-8-camunda-platform-release
+  labels:
+    app: camunda-platform
+    app.kubernetes.io/name: camunda-platform
+    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: camunda-platform
+    helm.sh/chart: camunda-platform-9.0.2
+    app.kubernetes.io/version: "8.4.0"
+  annotations:
+    {}
+data:
+  info: |
+    - name: camunda-8
+      namespace: tmail
+      version: 9.0.2
+      components:
+      
+    
+      - name: Operate
+        url: http://
+        readiness: http://camunda-8-operate.tmail:80/actuator/health/readiness
+    
+      
+    
+      - name: Tasklist
+        url: http://
+        readiness: http://camunda-8-tasklist.tmail:80/actuator/health/readiness
+    
+      - name: Zeebe Gateway
+        url: grpc://
+        readiness: http://camunda-8-zeebe-gateway.tmail:9600/actuator/health/readiness
+---
+# Source: camunda-platform/templates/operate/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: camunda-8-operate
+  labels:
+    app: camunda-platform
+    app.kubernetes.io/name: camunda-platform
+    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: camunda-platform
+    helm.sh/chart: camunda-platform-9.0.2
+    app.kubernetes.io/version: "8.4.0"
+    app.kubernetes.io/component: operate
+data:
+  application.yml: |
+    # Operate configuration file
+    camunda.operate:
+      # ELS instance to store Operate data
+      elasticsearch:
+        # Cluster name
+        clusterName: elasticsearch
+        # Host
+        host: camunda-8-elasticsearch
+        # Transport port
+        port: 9200
+      # Zeebe instance
+      zeebe:
+        # Broker contact point
+        brokerContactPoint: "camunda-8-zeebe-gateway:26500"
+      # ELS instance to export Zeebe data to
+      zeebeElasticsearch:
+        # Cluster name
+        clusterName: elasticsearch
+        # Host
+        host: camunda-8-elasticsearch
+        # Transport port
+        port: 9200
+        # Index prefix, configured in Zeebe Elasticsearch exporter
+        prefix: zeebe-record
+    logging:
+      level:
+        ROOT: INFO
+        io.camunda.operate: INFO
+    #Spring Boot Actuator endpoints to be exposed
+    management.endpoints.web.exposure.include: health,info,conditions,configprops,prometheus,loggers,usage-metrics,backups
+---
+# Source: camunda-platform/templates/tasklist/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: camunda-8-tasklist
+  labels:
+    app: camunda-platform
+    app.kubernetes.io/name: camunda-platform
+    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: camunda-platform
+    helm.sh/chart: camunda-platform-9.0.2
+    app.kubernetes.io/version: "8.4.0"
+    app.kubernetes.io/component: tasklist
+data:
+  application.yml: |
+    # Tasklist configuration file
+    camunda.tasklist:
+      # Set Tasklist username and password.
+      # If user with <username> does not exists it will be created.
+      # Default: demo/demo
+      #username:
+      #password:
+      # ELS instance to store Tasklist data
+      elasticsearch:
+        # Cluster name
+        clusterName: elasticsearch
+        # Host
+        host: camunda-8-elasticsearch
+        # Transport port
+        port: 9200
+      # Zeebe instance
+      zeebe:
+        # Broker contact point
+        brokerContactPoint: "camunda-8-zeebe-gateway:26500"
+      # ELS instance to export Zeebe data to
+      zeebeElasticsearch:
+        # Cluster name
+        clusterName: elasticsearch
+        # Host
+        host: camunda-8-elasticsearch
+        # Transport port
+        port: 9200
+        # Index prefix, configured in Zeebe Elasticsearch exporter
+        prefix: zeebe-record
+    #Spring Boot Actuator endpoints to be exposed
+    management.endpoints.web.exposure.include: health,info,conditions,configprops,prometheus,loggers,usage-metrics,backups
+    # Enable or disable metrics
+    #management.metrics.export.prometheus.enabled: false
+---
+# Source: camunda-platform/templates/zeebe-gateway/configmap.yaml
+kind: ConfigMap
+metadata:
+  name: camunda-8-zeebe-gateway
+  labels:
+    app: camunda-platform
+    app.kubernetes.io/name: camunda-platform
+    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: camunda-platform
+    helm.sh/chart: camunda-platform-9.0.2
+    app.kubernetes.io/version: "8.4.0"
+    app.kubernetes.io/component: zeebe-gateway
+apiVersion: v1
+data:
+  gateway-log4j2.xml: |
+---
+# Source: camunda-platform/templates/zeebe/configmap.yaml
+kind: ConfigMap
+metadata:
+  name: camunda-8-zeebe
+  labels:
+    app: camunda-platform
+    app.kubernetes.io/name: camunda-platform
+    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: camunda-platform
+    helm.sh/chart: camunda-platform-9.0.2
+    app.kubernetes.io/version: "8.4.0"
+    app.kubernetes.io/component: zeebe-broker
+apiVersion: v1
+data:
+  startup.sh: |
+    #!/usr/bin/env bash
+    set -eux -o pipefail
+    export ZEEBE_BROKER_CLUSTER_NODEID=${ZEEBE_BROKER_CLUSTER_NODEID:-$[${K8S_NAME##*-} * 1 + 0]}
+
+    if [ "$(ls -A /exporters/)" ]; then
+      mkdir -p /usr/local/zeebe/exporters/
+      cp -a /exporters/*.jar /usr/local/zeebe/exporters/
+    else
+      echo "No exporters available."
+    fi
+    exec /usr/local/zeebe/bin/broker
+
+  broker-log4j2.xml: |
+---
+# Source: camunda-platform/charts/elasticsearch/templates/master/svc-headless.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: camunda-8-elasticsearch-master-hl
+  namespace: "tmail"
+  labels:
+    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: elasticsearch
+    app.kubernetes.io/version: 8.11.3
+    helm.sh/chart: elasticsearch-19.13.15
+    app.kubernetes.io/component: master
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    - name: tcp-rest-api
+      port: 9200
+      targetPort: rest-api
+    - name: tcp-transport
+      port: 9300
+      targetPort: transport
+  selector:
+    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/name: elasticsearch
+    app.kubernetes.io/component: master
+---
+# Source: camunda-platform/charts/elasticsearch/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: camunda-8-elasticsearch
+  namespace: "tmail"
+  labels:
+    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: elasticsearch
+    app.kubernetes.io/version: 8.11.3
+    helm.sh/chart: elasticsearch-19.13.15
+    app.kubernetes.io/component: master
+spec:
+  type: ClusterIP
+  sessionAffinity: None
+  ports:
+    - name: tcp-rest-api
+      port: 9200
+      targetPort: rest-api
+      nodePort: null
+    - name: tcp-transport
+      port: 9300
+      nodePort: null
+  selector:
+    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/name: elasticsearch
+    app.kubernetes.io/component: master
+---
+# Source: camunda-platform/templates/connectors/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: camunda-8-connectors
+  labels:
+    app: camunda-platform
+    app.kubernetes.io/name: camunda-platform
+    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: camunda-platform
+    helm.sh/chart: camunda-platform-9.0.2
+    app.kubernetes.io/version: "8.4.0"
+    app.kubernetes.io/component: connectors
+  annotations:
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: camunda-platform
+    app.kubernetes.io/name: camunda-platform
+    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: camunda-platform
+    app.kubernetes.io/component: connectors
+---
+# Source: camunda-platform/templates/operate/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: camunda-8-operate
+  labels:
+    app: camunda-platform
+    app.kubernetes.io/name: camunda-platform
+    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: camunda-platform
+    helm.sh/chart: camunda-platform-9.0.2
+    app.kubernetes.io/version: "8.4.0"
+    app.kubernetes.io/component: operate
+  annotations:
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      name: http
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: camunda-platform
+    app.kubernetes.io/name: camunda-platform
+    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: camunda-platform
+    app.kubernetes.io/component: operate
+---
+# Source: camunda-platform/templates/tasklist/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: camunda-8-tasklist
+  labels:
+    app: camunda-platform
+    app.kubernetes.io/name: camunda-platform
+    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: camunda-platform
+    helm.sh/chart: camunda-platform-9.0.2
+    app.kubernetes.io/version: "8.4.0"
+    app.kubernetes.io/component: tasklist
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      name: http
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: camunda-platform
+    app.kubernetes.io/name: camunda-platform
+    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: camunda-platform
+    app.kubernetes.io/component: tasklist
+---
+# Source: camunda-platform/templates/zeebe-gateway/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: camunda-8-zeebe-gateway
+  labels:
+    app: camunda-platform
+    app.kubernetes.io/name: camunda-platform
+    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: camunda-platform
+    helm.sh/chart: camunda-platform-9.0.2
+    app.kubernetes.io/version: "8.4.0"
+    app.kubernetes.io/component: zeebe-gateway
+  annotations:
+spec:
+  type: ClusterIP
+  selector:
+    app: camunda-platform
+    app.kubernetes.io/name: camunda-platform
+    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: camunda-platform
+    app.kubernetes.io/component: zeebe-gateway
+  ports:
+    - port: 9600
+      protocol: TCP
+      name: http
+    - port: 26500
+      protocol: TCP
+      name: gateway
+---
+# Source: camunda-platform/templates/zeebe/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: "camunda-8-zeebe"
+  labels:
+    app: camunda-platform
+    app.kubernetes.io/name: camunda-platform
+    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: camunda-platform
+    helm.sh/chart: camunda-platform-9.0.2
+    app.kubernetes.io/version: "8.4.0"
+    app.kubernetes.io/component: zeebe-broker
+  annotations:
+    {}
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  type: ClusterIP
+  ports:
+    - port: 9600
+      protocol: TCP
+      name: http
+    - port: 26502
+      protocol: TCP
+      name: internal
+    - port: 26501
+      protocol: TCP
+      name: command
+  selector:
+    app: camunda-platform
+    app.kubernetes.io/name: camunda-platform
+    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: camunda-platform
+    app.kubernetes.io/component: zeebe-broker
+---
+# Source: camunda-platform/templates/connectors/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: camunda-8-connectors
+  labels:
+    app: camunda-platform
+    app.kubernetes.io/name: camunda-platform
+    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: camunda-platform
+    helm.sh/chart: camunda-platform-9.0.2
+    app.kubernetes.io/version: "8.4.0"
+    app.kubernetes.io/component: connectors
+  annotations:
+    {}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: camunda-platform
+      app.kubernetes.io/name: camunda-platform
+      app.kubernetes.io/instance: camunda-8
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/part-of: camunda-platform
+      app.kubernetes.io/component: connectors
+  template:
+    metadata:
+      labels:
+        app: camunda-platform
+        app.kubernetes.io/name: camunda-platform
+        app.kubernetes.io/instance: camunda-8
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/part-of: camunda-platform
+        helm.sh/chart: camunda-platform-9.0.2
+        app.kubernetes.io/version: "8.4.0"
+        app.kubernetes.io/component: connectors
+    spec:
+      imagePullSecrets:
+        []
+      initContainers:
+        []
+      containers:
+        - name: connectors
+          image: camunda/connectors-bundle:8.4.3
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1003
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+          env:
+            - name: SERVER_PORT
+              value: "8080"
+            - name: CAMUNDA_CONNECTOR_POLLING_ENABLED
+              value: "false"
+            - name: CAMUNDA_CONNECTOR_WEBHOOK_ENABLED
+              value: "false"
+            - name: ZEEBE_CLIENT_BROKER_GATEWAY-ADDRESS
+              value: "camunda-8-zeebe-gateway:26500"
+            - name: ZEEBE_CLIENT_SECURITY_PLAINTEXT
+              value: "true"
+          resources:
+            limits:
+              cpu: 2
+              memory: 2Gi
+            requests:
+              cpu: 1
+              memory: 1Gi
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            successThreshold: 1
+            failureThreshold: 5
+            timeoutSeconds: 1
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      securityContext:
+        fsGroup: 1003
+---
+# Source: camunda-platform/templates/operate/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: camunda-8-operate
+  labels:
+    app: camunda-platform
+    app.kubernetes.io/name: camunda-platform
+    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: camunda-platform
+    helm.sh/chart: camunda-platform-9.0.2
+    app.kubernetes.io/version: "8.4.0"
+    app.kubernetes.io/component: operate
+  annotations:
+    {}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: camunda-platform
+      app.kubernetes.io/name: camunda-platform
+      app.kubernetes.io/instance: camunda-8
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/part-of: camunda-platform
+      app.kubernetes.io/component: operate
+  template:
+    metadata:
+      labels:
+        app: camunda-platform
+        app.kubernetes.io/name: camunda-platform
+        app.kubernetes.io/instance: camunda-8
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/part-of: camunda-platform
+        helm.sh/chart: camunda-platform-9.0.2
+        app.kubernetes.io/version: "8.4.0"
+        app.kubernetes.io/component: operate
+      annotations:
+        checksum/config: df96f720c93fc6ad64dbbe5a63b91608d48ffb2266364c894f5f746af09c9afe
+    spec:
+      imagePullSecrets:
+        []
+      initContainers:
+        []
+      containers:
+        - name: operate
+          image: camunda/operate:8.4.0
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsUser: 1004
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "auth"
+            - name: ZEEBE_CLIENT_CONFIG_PATH
+              value: /tmp/zeebe_auth_cache
+          resources:
+            limits:
+              cpu: 2000m
+              memory: 2Gi
+            requests:
+              cpu: 600m
+              memory: 400Mi
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              scheme: HTTP
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            successThreshold: 1
+            failureThreshold: 5
+            timeoutSeconds: 1
+          volumeMounts:
+            - name: config
+              mountPath: /usr/local/operate/config/application.yml
+              subPath: application.yml
+            - name: tmp
+              mountPath: /tmp
+            - name: camunda
+              mountPath: /camunda
+      volumes:
+        - name: config
+          configMap:
+            name: camunda-8-operate
+            defaultMode: 484
+        - name: tmp
+          emptyDir: {}
+        - name: camunda
+          emptyDir: {}
+      securityContext:
+        fsGroup: 1000
+        runAsNonRoot: true
+---
+# Source: camunda-platform/templates/tasklist/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: camunda-8-tasklist
+  labels:
+    app: camunda-platform
+    app.kubernetes.io/name: camunda-platform
+    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: camunda-platform
+    helm.sh/chart: camunda-platform-9.0.2
+    app.kubernetes.io/version: "8.4.0"
+    app.kubernetes.io/component: tasklist
+  annotations:
+    {}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: camunda-platform
+      app.kubernetes.io/name: camunda-platform
+      app.kubernetes.io/instance: camunda-8
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/part-of: camunda-platform
+      app.kubernetes.io/component: tasklist
+  template:
+    metadata:
+      labels:
+        app: camunda-platform
+        app.kubernetes.io/name: camunda-platform
+        app.kubernetes.io/instance: camunda-8
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/part-of: camunda-platform
+        helm.sh/chart: camunda-platform-9.0.2
+        app.kubernetes.io/version: "8.4.0"
+        app.kubernetes.io/component: tasklist
+      annotations:
+        checksum/config: 33eb43a3e030ea7c8d92a6db0fbf2aaa8e425ef367c1446a1b6531d6289c360e
+    spec:
+      imagePullSecrets:
+        []
+      initContainers:
+        []
+      containers:
+        - name: tasklist
+          image: camunda/tasklist:8.4.0
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsUser: 1002
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "auth"
+            - name: HOME
+              value: /parent
+            - name: ZEEBE_CLIENT_CONFIG_PATH
+              value: /tmp/zeebe_auth_cache
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+            requests:
+              cpu: 400m
+              memory: 1Gi
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              scheme: HTTP
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            successThreshold: 1
+            failureThreshold: 5
+            timeoutSeconds: 1
+          volumeMounts:
+            - name: config
+              mountPath: /app/resources/application.yml
+              subPath: application.yml
+            - name: config
+              mountPath: /usr/local/tasklist/config/application.yml
+              subPath: application.yml
+            - mountPath: /tmp
+              name: tmp
+            - mountPath: /camunda
+              name: camunda
+      volumes:
+        - name: config
+          configMap:
+            name: camunda-8-tasklist
+            defaultMode: 484
+        - name: tmp
+          emptyDir: {}
+        - name: camunda
+          emptyDir: {}
+      securityContext:
+        fsGroup: 1002
+        runAsNonRoot: true
+---
+# Source: camunda-platform/templates/zeebe-gateway/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: camunda-8-zeebe-gateway
+  labels:
+    app: camunda-platform
+    app.kubernetes.io/name: camunda-platform
+    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: camunda-platform
+    helm.sh/chart: camunda-platform-9.0.2
+    app.kubernetes.io/version: "8.4.0"
+    app.kubernetes.io/component: zeebe-gateway
+  annotations:
+    {}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: camunda-platform
+      app.kubernetes.io/name: camunda-platform
+      app.kubernetes.io/instance: camunda-8
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/part-of: camunda-platform
+      app.kubernetes.io/component: zeebe-gateway
+  template:
+    metadata:
+      labels:
+        app: camunda-platform
+        app.kubernetes.io/name: camunda-platform
+        app.kubernetes.io/instance: camunda-8
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/part-of: camunda-platform
+        helm.sh/chart: camunda-platform-9.0.2
+        app.kubernetes.io/version: "8.4.0"
+        app.kubernetes.io/component: zeebe-gateway
+      annotations:
+        {}
+    spec:
+      imagePullSecrets:
+        []
+      initContainers:
+        []
+      containers:
+        - name: zeebe-gateway
+          image: camunda/zeebe:8.4.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9600
+              name: http
+            - containerPort: 26500
+              name: gateway
+            - containerPort: 26502
+              name: internal
+          env:
+            - name: ZEEBE_STANDALONE_GATEWAY
+              value: "true"
+            - name: ZEEBE_GATEWAY_CLUSTER_CLUSTERNAME
+              value: camunda-8-zeebe
+            - name: ZEEBE_GATEWAY_CLUSTER_MEMBERID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: ZEEBE_LOG_LEVEL
+              value: "info"
+            - name: JAVA_TOOL_OPTIONS
+              value: "-XX:+ExitOnOutOfMemoryError"
+            - name: ZEEBE_GATEWAY_CLUSTER_CONTACTPOINT
+              value: camunda-8-zeebe:26502
+            - name: ZEEBE_GATEWAY_NETWORK_HOST
+              value: 0.0.0.0
+            - name: ZEEBE_GATEWAY_NETWORK_PORT
+              value: "26500"
+            - name: ZEEBE_GATEWAY_CLUSTER_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: ZEEBE_GATEWAY_CLUSTER_PORT
+              value: "26502"
+            - name: ZEEBE_GATEWAY_MONITORING_HOST
+              value: 0.0.0.0
+            - name: ZEEBE_GATEWAY_MONITORING_PORT
+              value: "9600"
+          volumeMounts:
+            - mountPath: /tmp
+              name: tmp
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              scheme: HTTP
+              port: 9600
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            successThreshold: 1
+            failureThreshold: 5
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: 400m
+              memory: 450Mi
+            requests:
+              cpu: 400m
+              memory: 450Mi
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: config
+          configMap:
+            name: camunda-8-zeebe-gateway
+            defaultMode: 484
+      securityContext:
+        fsGroup: 1000
+        runAsNonRoot: true
+  # yamllint disable
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app.kubernetes.io/component
+                operator: In
+                values:
+                - zeebe-gateway
+            topologyKey: kubernetes.io/hostname
+  # yamllint enable
+---
+# Source: camunda-platform/charts/elasticsearch/templates/master/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: camunda-8-elasticsearch-master
+  namespace: "tmail"
+  labels:
+    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: elasticsearch
+    app.kubernetes.io/version: 8.11.3
+    helm.sh/chart: elasticsearch-19.13.15
+    app.kubernetes.io/component: master
+    ## Istio Labels: https://istio.io/docs/ops/deployment/requirements/
+    app: master
+spec:
+  replicas: 2
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: camunda-8
+      app.kubernetes.io/name: elasticsearch
+      app.kubernetes.io/component: master
+  serviceName: camunda-8-elasticsearch-master-hl
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: camunda-8
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: elasticsearch
+        app.kubernetes.io/version: 8.11.3
+        helm.sh/chart: elasticsearch-19.13.15
+        app.kubernetes.io/component: master
+        ## Istio Labels: https://istio.io/docs/ops/deployment/requirements/
+        app: master
+      annotations:
+    spec:
+      serviceAccountName: default
+      
+      affinity:
+        podAffinity:
+          
+        podAntiAffinity:
+          
+        nodeAffinity:
+          
+      securityContext:
+        fsGroup: 1001
+      initContainers:
+        ## Image that performs the sysctl operation to modify Kernel settings (needed sometimes to avoid boot errors)
+        - name: sysctl
+          image: docker.io/bitnami/os-shell:11-debian-11-r93
+          imagePullPolicy: "IfNotPresent"
+          command:
+            - /bin/bash
+            - -ec
+            - |
+              CURRENT=`sysctl -n vm.max_map_count`;
+              DESIRED="262144";
+              if [ "$DESIRED" -gt "$CURRENT" ]; then
+                  sysctl -w vm.max_map_count=262144;
+              fi;
+              CURRENT=`sysctl -n fs.file-max`;
+              DESIRED="65536";
+              if [ "$DESIRED" -gt "$CURRENT" ]; then
+                  sysctl -w fs.file-max=65536;
+              fi;
+          securityContext:
+            privileged: true
+            runAsUser: 0
+          resources:
+            limits: {}
+            requests: {}
+      containers:
+        - name: elasticsearch
+          image: docker.io/bitnami/elasticsearch:8.9.2
+          imagePullPolicy: "IfNotPresent"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+          env:
+            - name: BITNAMI_DEBUG
+              value: "false"
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: ELASTICSEARCH_IS_DEDICATED_NODE
+              value: "no"
+            - name: ELASTICSEARCH_NODE_ROLES
+              value: "master"
+            - name: ELASTICSEARCH_TRANSPORT_PORT_NUMBER
+              value: "9300"
+            - name: ELASTICSEARCH_HTTP_PORT_NUMBER
+              value: "9200"
+            - name: ELASTICSEARCH_CLUSTER_NAME
+              value: "elastic"
+            
+            - name: ELASTICSEARCH_CLUSTER_HOSTS
+              value: "camunda-8-elasticsearch-master-hl.tmail.svc.cluster.local,"
+            - name: ELASTICSEARCH_TOTAL_NODES
+              value: "2"
+            - name: ELASTICSEARCH_CLUSTER_MASTER_HOSTS
+              value: camunda-8-elasticsearch-master-0 camunda-8-elasticsearch-master-1 
+            - name: ELASTICSEARCH_MINIMUM_MASTER_NODES
+              value: "2"
+            - name: ELASTICSEARCH_ADVERTISED_HOSTNAME
+              value: "$(MY_POD_NAME).camunda-8-elasticsearch-master-hl.tmail.svc.cluster.local"
+            - name: ELASTICSEARCH_HEAP_SIZE
+              value: "1024m"
+            - name: ELASTICSEARCH_ENABLE_REST_TLS
+              value: "false"
+          ports:
+            - name: rest-api
+              containerPort: 9200
+            - name: transport
+              containerPort: 9300
+          livenessProbe:
+            failureThreshold: 5
+            initialDelaySeconds: 180
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+            tcpSocket:
+              port: rest-api
+          readinessProbe:
+            failureThreshold: 5
+            initialDelaySeconds: 90
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+            exec:
+              command:
+                - /opt/bitnami/scripts/elasticsearch/healthcheck.sh
+          resources:
+            limits:
+              cpu: 2
+              memory: 2Gi
+            requests:
+              cpu: 1
+              memory: 2Gi
+          volumeMounts:
+            - name: data
+              mountPath: /bitnami/elasticsearch/data
+            - mountPath: /tmp
+              name: tmp
+            - mountPath: /usr/share/elasticsearch/logs
+              name: logs
+            - mountPath: /usr/share/elasticsearch/config
+              name: config-dir
+      volumes:
+        - emptyDir: {}
+          name: tmp
+        - emptyDir: {}
+          name: logs
+        - emptyDir: {}
+          name: config-dir
+  volumeClaimTemplates:
+    - metadata:
+        name: "data"
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "64Gi"
+---
+# Source: camunda-platform/templates/zeebe/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: "camunda-8-zeebe"
+  labels:
+    app: camunda-platform
+    app.kubernetes.io/name: camunda-platform
+    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: camunda-platform
+    helm.sh/chart: camunda-platform-9.0.2
+    app.kubernetes.io/version: "8.4.0"
+    app.kubernetes.io/component: zeebe-broker
+  annotations:
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: camunda-platform
+      app.kubernetes.io/name: camunda-platform
+      app.kubernetes.io/instance: camunda-8
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/part-of: camunda-platform
+      app.kubernetes.io/component: zeebe-broker
+  serviceName: "camunda-8-zeebe"
+  updateStrategy:
+    type: RollingUpdate
+  podManagementPolicy: Parallel
+  template:
+    metadata:
+      labels:
+        app: camunda-platform
+        app.kubernetes.io/name: camunda-platform
+        app.kubernetes.io/instance: camunda-8
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/part-of: camunda-platform
+        helm.sh/chart: camunda-platform-9.0.2
+        app.kubernetes.io/version: "8.4.0"
+        app.kubernetes.io/component: zeebe-broker
+      annotations:
+    spec:
+      imagePullSecrets:
+        []
+      initContainers:
+        []
+      containers:
+        - name: zeebe
+          image: camunda/zeebe:8.4.0
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsUser: 1000
+          env:
+            - name: LC_ALL
+              value: C.UTF-8
+            - name: K8S_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: K8S_SERVICE_NAME
+              value: "camunda-8-zeebe"
+            - name: K8S_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: ZEEBE_BROKER_NETWORK_ADVERTISEDHOST
+              value: "$(K8S_NAME).$(K8S_SERVICE_NAME).$(K8S_NAMESPACE).svc"
+            - name: ZEEBE_BROKER_CLUSTER_INITIALCONTACTPOINTS
+              value:
+                $(K8S_SERVICE_NAME)-0.$(K8S_SERVICE_NAME).$(K8S_NAMESPACE).svc:26502,
+            - name: ZEEBE_BROKER_CLUSTER_CLUSTERNAME
+              value: camunda-8-zeebe
+            - name: ZEEBE_LOG_LEVEL
+              value: "info"
+            - name: ZEEBE_BROKER_CLUSTER_PARTITIONSCOUNT
+              value: "1"
+            - name: ZEEBE_BROKER_CLUSTER_CLUSTERSIZE
+              value: "1"
+            - name: ZEEBE_BROKER_CLUSTER_REPLICATIONFACTOR
+              value: "1"
+            - name: ZEEBE_BROKER_THREADS_CPUTHREADCOUNT
+              value: "3"
+            - name: ZEEBE_BROKER_THREADS_IOTHREADCOUNT
+              value: "3"
+            - name: ZEEBE_BROKER_GATEWAY_ENABLE
+              value: "false"
+            - name: ZEEBE_BROKER_EXPORTERS_ELASTICSEARCH_CLASSNAME
+              value: "io.camunda.zeebe.exporter.ElasticsearchExporter"
+            - name: ZEEBE_BROKER_EXPORTERS_ELASTICSEARCH_ARGS_URL
+              value: "http://camunda-8-elasticsearch:9200"
+            - name: ZEEBE_BROKER_EXPORTERS_ELASTICSEARCH_ARGS_INDEX_PREFIX
+              value: "zeebe-record"
+            - name: ZEEBE_BROKER_NETWORK_COMMANDAPI_PORT
+              value: "26501"
+            - name: ZEEBE_BROKER_NETWORK_INTERNALAPI_PORT
+              value: "26502"
+            - name: ZEEBE_BROKER_NETWORK_MONITORINGAPI_PORT
+              value: "9600"
+            - name: K8S_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: JAVA_TOOL_OPTIONS
+              value: "-XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/usr/local/zeebe/data -XX:ErrorFile=/usr/local/zeebe/data/zeebe_error%p.log -XX:+ExitOnOutOfMemoryError"
+            - name: ZEEBE_BROKER_DATA_SNAPSHOTPERIOD
+              value: 5m
+            - name: ZEEBE_BROKER_DATA_DISK_FREESPACE_REPLICATION
+              value: 2GB
+            - name: ZEEBE_BROKER_DATA_DISK_FREESPACE_PROCESSING
+              value: 3GB
+          ports:
+            - containerPort: 9600
+              name: http
+            - containerPort: 26501
+              name: command
+            - containerPort: 26502
+              name: internal
+          readinessProbe:
+            httpGet:
+              path: /ready
+              scheme: HTTP
+              port: 9600
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            successThreshold: 1
+            failureThreshold: 5
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: 960m
+              memory: 1920Mi
+            requests:
+              cpu: 800m
+              memory: 1200Mi
+          volumeMounts:
+            - name: config
+              mountPath: /usr/local/bin/startup.sh
+              subPath: startup.sh
+            - name: data
+              mountPath: /usr/local/zeebe/data
+            - name: exporters
+              mountPath: /exporters
+            - mountPath: /tmp
+              name: tmp
+      volumes:
+        - name: config
+          configMap:
+            name: camunda-8-zeebe
+            defaultMode: 492
+        - name: exporters
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+      securityContext:
+        fsGroup: 1000
+        runAsNonRoot: true
+# yamllint disable
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app.kubernetes.io/component
+                operator: In
+                values:
+                - zeebe-broker
+            topologyKey: kubernetes.io/hostname
+# yamllint enable
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: "10Gi"
+---
+# Source: camunda-platform/templates/operate/tests/test-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "camunda-8-operate-test-connection"
+  labels:
+    app: camunda-platform
+    app.kubernetes.io/name: camunda-platform
+    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: camunda-platform
+    helm.sh/chart: camunda-platform-9.0.2
+    app.kubernetes.io/version: "8.4.0"
+    app.kubernetes.io/component: operate
+  annotations:
+    "helm.sh/hook": test-success
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args:  ['camunda-8-operate:80']
+  restartPolicy: Never
