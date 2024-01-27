@@ -3,11 +3,11 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: camunda-8-operate
+  name: camunda-operate
   labels:
     app: camunda-platform
     app.kubernetes.io/name: camunda-platform
-    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/instance: camunda
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: camunda-platform
     helm.sh/chart: camunda-platform-9.0.2
@@ -18,11 +18,11 @@ metadata:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: camunda-8-tasklist
+  name: camunda-tasklist
   labels:
     app: camunda-platform
     app.kubernetes.io/name: camunda-platform
-    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/instance: camunda
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: camunda-platform
     helm.sh/chart: camunda-platform-9.0.2
@@ -33,11 +33,11 @@ metadata:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: camunda-8-zeebe-gateway
+  name: camunda-zeebe-gateway
   labels:
     app: camunda-platform
     app.kubernetes.io/name: camunda-platform
-    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/instance: camunda
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: camunda-platform
     helm.sh/chart: camunda-platform-9.0.2
@@ -48,11 +48,11 @@ metadata:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: camunda-8-zeebe
+  name: camunda-zeebe
   labels:
     app: camunda-platform
     app.kubernetes.io/name: camunda-platform
-    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/instance: camunda
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: camunda-platform
     helm.sh/chart: camunda-platform-9.0.2
@@ -63,11 +63,11 @@ metadata:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: camunda-8-camunda-platform-release
+  name: camunda-camunda-platform-release
   labels:
     app: camunda-platform
     app.kubernetes.io/name: camunda-platform
-    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/instance: camunda
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: camunda-platform
     helm.sh/chart: camunda-platform-9.0.2
@@ -76,7 +76,7 @@ metadata:
     {}
 data:
   info: |
-    - name: camunda-8
+    - name: camunda
       namespace: tmail
       version: 9.0.2
       components:
@@ -84,27 +84,27 @@ data:
     
       - name: Operate
         url: http://
-        readiness: http://camunda-8-operate.tmail:80/actuator/health/readiness
+        readiness: http://camunda-operate.tmail:80/actuator/health/readiness
     
       
     
       - name: Tasklist
         url: http://
-        readiness: http://camunda-8-tasklist.tmail:80/actuator/health/readiness
+        readiness: http://camunda-tasklist.tmail:80/actuator/health/readiness
     
       - name: Zeebe Gateway
         url: grpc://
-        readiness: http://camunda-8-zeebe-gateway.tmail:9600/actuator/health/readiness
+        readiness: http://camunda-zeebe-gateway.tmail:9600/actuator/health/readiness
 ---
 # Source: camunda-platform/templates/operate/configmap.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: camunda-8-operate
+  name: camunda-operate
   labels:
     app: camunda-platform
     app.kubernetes.io/name: camunda-platform
-    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/instance: camunda
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: camunda-platform
     helm.sh/chart: camunda-platform-9.0.2
@@ -119,19 +119,19 @@ data:
         # Cluster name
         clusterName: elasticsearch
         # Host
-        host: camunda-8-elasticsearch
+        host: camunda-elasticsearch
         # Transport port
         port: 9200
       # Zeebe instance
       zeebe:
         # Broker contact point
-        brokerContactPoint: "camunda-8-zeebe-gateway:26500"
+        brokerContactPoint: "camunda-zeebe-gateway:26500"
       # ELS instance to export Zeebe data to
       zeebeElasticsearch:
         # Cluster name
         clusterName: elasticsearch
         # Host
-        host: camunda-8-elasticsearch
+        host: camunda-elasticsearch
         # Transport port
         port: 9200
         # Index prefix, configured in Zeebe Elasticsearch exporter
@@ -147,11 +147,11 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: camunda-8-tasklist
+  name: camunda-tasklist
   labels:
     app: camunda-platform
     app.kubernetes.io/name: camunda-platform
-    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/instance: camunda
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: camunda-platform
     helm.sh/chart: camunda-platform-9.0.2
@@ -171,19 +171,19 @@ data:
         # Cluster name
         clusterName: elasticsearch
         # Host
-        host: camunda-8-elasticsearch
+        host: camunda-elasticsearch
         # Transport port
         port: 9200
       # Zeebe instance
       zeebe:
         # Broker contact point
-        brokerContactPoint: "camunda-8-zeebe-gateway:26500"
+        brokerContactPoint: "camunda-zeebe-gateway:26500"
       # ELS instance to export Zeebe data to
       zeebeElasticsearch:
         # Cluster name
         clusterName: elasticsearch
         # Host
-        host: camunda-8-elasticsearch
+        host: camunda-elasticsearch
         # Transport port
         port: 9200
         # Index prefix, configured in Zeebe Elasticsearch exporter
@@ -196,11 +196,11 @@ data:
 # Source: camunda-platform/templates/zeebe-gateway/configmap.yaml
 kind: ConfigMap
 metadata:
-  name: camunda-8-zeebe-gateway
+  name: camunda-zeebe-gateway
   labels:
     app: camunda-platform
     app.kubernetes.io/name: camunda-platform
-    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/instance: camunda
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: camunda-platform
     helm.sh/chart: camunda-platform-9.0.2
@@ -213,11 +213,11 @@ data:
 # Source: camunda-platform/templates/zeebe/configmap.yaml
 kind: ConfigMap
 metadata:
-  name: camunda-8-zeebe
+  name: camunda-zeebe
   labels:
     app: camunda-platform
     app.kubernetes.io/name: camunda-platform
-    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/instance: camunda
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: camunda-platform
     helm.sh/chart: camunda-platform-9.0.2
@@ -244,10 +244,10 @@ data:
 apiVersion: v1
 kind: Service
 metadata:
-  name: camunda-8-elasticsearch-master-hl
+  name: camunda-elasticsearch-master-hl
   namespace: "tmail"
   labels:
-    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/instance: camunda
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: elasticsearch
     app.kubernetes.io/version: 8.11.3
@@ -265,7 +265,7 @@ spec:
       port: 9300
       targetPort: transport
   selector:
-    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/instance: camunda
     app.kubernetes.io/name: elasticsearch
     app.kubernetes.io/component: master
 ---
@@ -273,10 +273,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: camunda-8-elasticsearch
+  name: camunda-elasticsearch
   namespace: "tmail"
   labels:
-    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/instance: camunda
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: elasticsearch
     app.kubernetes.io/version: 8.11.3
@@ -294,7 +294,7 @@ spec:
       port: 9300
       nodePort: null
   selector:
-    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/instance: camunda
     app.kubernetes.io/name: elasticsearch
     app.kubernetes.io/component: master
 ---
@@ -302,11 +302,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: camunda-8-connectors
+  name: camunda-connectors
   labels:
     app: camunda-platform
     app.kubernetes.io/name: camunda-platform
-    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/instance: camunda
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: camunda-platform
     helm.sh/chart: camunda-platform-9.0.2
@@ -323,7 +323,7 @@ spec:
   selector:
     app: camunda-platform
     app.kubernetes.io/name: camunda-platform
-    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/instance: camunda
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: camunda-platform
     app.kubernetes.io/component: connectors
@@ -332,11 +332,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: camunda-8-operate
+  name: camunda-operate
   labels:
     app: camunda-platform
     app.kubernetes.io/name: camunda-platform
-    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/instance: camunda
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: camunda-platform
     helm.sh/chart: camunda-platform-9.0.2
@@ -353,7 +353,7 @@ spec:
   selector:
     app: camunda-platform
     app.kubernetes.io/name: camunda-platform
-    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/instance: camunda
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: camunda-platform
     app.kubernetes.io/component: operate
@@ -362,11 +362,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: camunda-8-tasklist
+  name: camunda-tasklist
   labels:
     app: camunda-platform
     app.kubernetes.io/name: camunda-platform
-    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/instance: camunda
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: camunda-platform
     helm.sh/chart: camunda-platform-9.0.2
@@ -382,7 +382,7 @@ spec:
   selector:
     app: camunda-platform
     app.kubernetes.io/name: camunda-platform
-    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/instance: camunda
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: camunda-platform
     app.kubernetes.io/component: tasklist
@@ -391,11 +391,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: camunda-8-zeebe-gateway
+  name: camunda-zeebe-gateway
   labels:
     app: camunda-platform
     app.kubernetes.io/name: camunda-platform
-    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/instance: camunda
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: camunda-platform
     helm.sh/chart: camunda-platform-9.0.2
@@ -407,7 +407,7 @@ spec:
   selector:
     app: camunda-platform
     app.kubernetes.io/name: camunda-platform
-    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/instance: camunda
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: camunda-platform
     app.kubernetes.io/component: zeebe-gateway
@@ -423,11 +423,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: "camunda-8-zeebe"
+  name: "camunda-zeebe"
   labels:
     app: camunda-platform
     app.kubernetes.io/name: camunda-platform
-    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/instance: camunda
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: camunda-platform
     helm.sh/chart: camunda-platform-9.0.2
@@ -452,7 +452,7 @@ spec:
   selector:
     app: camunda-platform
     app.kubernetes.io/name: camunda-platform
-    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/instance: camunda
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: camunda-platform
     app.kubernetes.io/component: zeebe-broker
@@ -461,11 +461,11 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: camunda-8-connectors
+  name: camunda-connectors
   labels:
     app: camunda-platform
     app.kubernetes.io/name: camunda-platform
-    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/instance: camunda
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: camunda-platform
     helm.sh/chart: camunda-platform-9.0.2
@@ -479,7 +479,7 @@ spec:
     matchLabels:
       app: camunda-platform
       app.kubernetes.io/name: camunda-platform
-      app.kubernetes.io/instance: camunda-8
+      app.kubernetes.io/instance: camunda
       app.kubernetes.io/managed-by: Helm
       app.kubernetes.io/part-of: camunda-platform
       app.kubernetes.io/component: connectors
@@ -488,7 +488,7 @@ spec:
       labels:
         app: camunda-platform
         app.kubernetes.io/name: camunda-platform
-        app.kubernetes.io/instance: camunda-8
+        app.kubernetes.io/instance: camunda
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/part-of: camunda-platform
         helm.sh/chart: camunda-platform-9.0.2
@@ -521,7 +521,7 @@ spec:
             - name: CAMUNDA_CONNECTOR_WEBHOOK_ENABLED
               value: "false"
             - name: ZEEBE_CLIENT_BROKER_GATEWAY-ADDRESS
-              value: "camunda-8-zeebe-gateway:26500"
+              value: "camunda-zeebe-gateway:26500"
             - name: ZEEBE_CLIENT_SECURITY_PLAINTEXT
               value: "true"
           resources:
@@ -553,11 +553,11 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: camunda-8-operate
+  name: camunda-operate
   labels:
     app: camunda-platform
     app.kubernetes.io/name: camunda-platform
-    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/instance: camunda
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: camunda-platform
     helm.sh/chart: camunda-platform-9.0.2
@@ -571,7 +571,7 @@ spec:
     matchLabels:
       app: camunda-platform
       app.kubernetes.io/name: camunda-platform
-      app.kubernetes.io/instance: camunda-8
+      app.kubernetes.io/instance: camunda
       app.kubernetes.io/managed-by: Helm
       app.kubernetes.io/part-of: camunda-platform
       app.kubernetes.io/component: operate
@@ -580,14 +580,14 @@ spec:
       labels:
         app: camunda-platform
         app.kubernetes.io/name: camunda-platform
-        app.kubernetes.io/instance: camunda-8
+        app.kubernetes.io/instance: camunda
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/part-of: camunda-platform
         helm.sh/chart: camunda-platform-9.0.2
         app.kubernetes.io/version: "8.4.0"
         app.kubernetes.io/component: operate
       annotations:
-        checksum/config: df96f720c93fc6ad64dbbe5a63b91608d48ffb2266364c894f5f746af09c9afe
+        checksum/config: 7e9839e43847f7064b0d3ee40d3f85606060b322483a3de63c90bbcebc4844f8
     spec:
       imagePullSecrets:
         []
@@ -639,7 +639,7 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: camunda-8-operate
+            name: camunda-operate
             defaultMode: 484
         - name: tmp
           emptyDir: {}
@@ -653,11 +653,11 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: camunda-8-tasklist
+  name: camunda-tasklist
   labels:
     app: camunda-platform
     app.kubernetes.io/name: camunda-platform
-    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/instance: camunda
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: camunda-platform
     helm.sh/chart: camunda-platform-9.0.2
@@ -671,7 +671,7 @@ spec:
     matchLabels:
       app: camunda-platform
       app.kubernetes.io/name: camunda-platform
-      app.kubernetes.io/instance: camunda-8
+      app.kubernetes.io/instance: camunda
       app.kubernetes.io/managed-by: Helm
       app.kubernetes.io/part-of: camunda-platform
       app.kubernetes.io/component: tasklist
@@ -680,14 +680,14 @@ spec:
       labels:
         app: camunda-platform
         app.kubernetes.io/name: camunda-platform
-        app.kubernetes.io/instance: camunda-8
+        app.kubernetes.io/instance: camunda
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/part-of: camunda-platform
         helm.sh/chart: camunda-platform-9.0.2
         app.kubernetes.io/version: "8.4.0"
         app.kubernetes.io/component: tasklist
       annotations:
-        checksum/config: 33eb43a3e030ea7c8d92a6db0fbf2aaa8e425ef367c1446a1b6531d6289c360e
+        checksum/config: debfb883ef3d5cd6661689bcf6062c746a5850b55f214d97dc8c1042463d2245
     spec:
       imagePullSecrets:
         []
@@ -744,7 +744,7 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: camunda-8-tasklist
+            name: camunda-tasklist
             defaultMode: 484
         - name: tmp
           emptyDir: {}
@@ -758,11 +758,11 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: camunda-8-zeebe-gateway
+  name: camunda-zeebe-gateway
   labels:
     app: camunda-platform
     app.kubernetes.io/name: camunda-platform
-    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/instance: camunda
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: camunda-platform
     helm.sh/chart: camunda-platform-9.0.2
@@ -776,7 +776,7 @@ spec:
     matchLabels:
       app: camunda-platform
       app.kubernetes.io/name: camunda-platform
-      app.kubernetes.io/instance: camunda-8
+      app.kubernetes.io/instance: camunda
       app.kubernetes.io/managed-by: Helm
       app.kubernetes.io/part-of: camunda-platform
       app.kubernetes.io/component: zeebe-gateway
@@ -785,7 +785,7 @@ spec:
       labels:
         app: camunda-platform
         app.kubernetes.io/name: camunda-platform
-        app.kubernetes.io/instance: camunda-8
+        app.kubernetes.io/instance: camunda
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/part-of: camunda-platform
         helm.sh/chart: camunda-platform-9.0.2
@@ -813,7 +813,7 @@ spec:
             - name: ZEEBE_STANDALONE_GATEWAY
               value: "true"
             - name: ZEEBE_GATEWAY_CLUSTER_CLUSTERNAME
-              value: camunda-8-zeebe
+              value: camunda-zeebe
             - name: ZEEBE_GATEWAY_CLUSTER_MEMBERID
               valueFrom:
                 fieldRef:
@@ -823,7 +823,7 @@ spec:
             - name: JAVA_TOOL_OPTIONS
               value: "-XX:+ExitOnOutOfMemoryError"
             - name: ZEEBE_GATEWAY_CLUSTER_CONTACTPOINT
-              value: camunda-8-zeebe:26502
+              value: camunda-zeebe:26502
             - name: ZEEBE_GATEWAY_NETWORK_HOST
               value: 0.0.0.0
             - name: ZEEBE_GATEWAY_NETWORK_PORT
@@ -869,7 +869,7 @@ spec:
           emptyDir: {}
         - name: config
           configMap:
-            name: camunda-8-zeebe-gateway
+            name: camunda-zeebe-gateway
             defaultMode: 484
       securityContext:
         fsGroup: 1000
@@ -891,10 +891,10 @@ spec:
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: camunda-8-elasticsearch-master
+  name: camunda-elasticsearch-master
   namespace: "tmail"
   labels:
-    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/instance: camunda
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: elasticsearch
     app.kubernetes.io/version: 8.11.3
@@ -907,16 +907,16 @@ spec:
   podManagementPolicy: Parallel
   selector:
     matchLabels:
-      app.kubernetes.io/instance: camunda-8
+      app.kubernetes.io/instance: camunda
       app.kubernetes.io/name: elasticsearch
       app.kubernetes.io/component: master
-  serviceName: camunda-8-elasticsearch-master-hl
+  serviceName: camunda-elasticsearch-master-hl
   updateStrategy:
     type: RollingUpdate
   template:
     metadata:
       labels:
-        app.kubernetes.io/instance: camunda-8
+        app.kubernetes.io/instance: camunda
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: elasticsearch
         app.kubernetes.io/version: 8.11.3
@@ -988,15 +988,15 @@ spec:
               value: "elastic"
             
             - name: ELASTICSEARCH_CLUSTER_HOSTS
-              value: "camunda-8-elasticsearch-master-hl.tmail.svc.cluster.local,"
+              value: "camunda-elasticsearch-master-hl.tmail.svc.cluster.local,"
             - name: ELASTICSEARCH_TOTAL_NODES
               value: "2"
             - name: ELASTICSEARCH_CLUSTER_MASTER_HOSTS
-              value: camunda-8-elasticsearch-master-0 camunda-8-elasticsearch-master-1 
+              value: camunda-elasticsearch-master-0 camunda-elasticsearch-master-1 
             - name: ELASTICSEARCH_MINIMUM_MASTER_NODES
               value: "2"
             - name: ELASTICSEARCH_ADVERTISED_HOSTNAME
-              value: "$(MY_POD_NAME).camunda-8-elasticsearch-master-hl.tmail.svc.cluster.local"
+              value: "$(MY_POD_NAME).camunda-elasticsearch-master-hl.tmail.svc.cluster.local"
             - name: ELASTICSEARCH_HEAP_SIZE
               value: "1024m"
             - name: ELASTICSEARCH_ENABLE_REST_TLS
@@ -1060,11 +1060,11 @@ spec:
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: "camunda-8-zeebe"
+  name: "camunda-zeebe"
   labels:
     app: camunda-platform
     app.kubernetes.io/name: camunda-platform
-    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/instance: camunda
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: camunda-platform
     helm.sh/chart: camunda-platform-9.0.2
@@ -1077,11 +1077,11 @@ spec:
     matchLabels:
       app: camunda-platform
       app.kubernetes.io/name: camunda-platform
-      app.kubernetes.io/instance: camunda-8
+      app.kubernetes.io/instance: camunda
       app.kubernetes.io/managed-by: Helm
       app.kubernetes.io/part-of: camunda-platform
       app.kubernetes.io/component: zeebe-broker
-  serviceName: "camunda-8-zeebe"
+  serviceName: "camunda-zeebe"
   updateStrategy:
     type: RollingUpdate
   podManagementPolicy: Parallel
@@ -1090,7 +1090,7 @@ spec:
       labels:
         app: camunda-platform
         app.kubernetes.io/name: camunda-platform
-        app.kubernetes.io/instance: camunda-8
+        app.kubernetes.io/instance: camunda
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/part-of: camunda-platform
         helm.sh/chart: camunda-platform-9.0.2
@@ -1119,7 +1119,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: K8S_SERVICE_NAME
-              value: "camunda-8-zeebe"
+              value: "camunda-zeebe"
             - name: K8S_NAMESPACE
               valueFrom:
                 fieldRef:
@@ -1130,7 +1130,7 @@ spec:
               value:
                 $(K8S_SERVICE_NAME)-0.$(K8S_SERVICE_NAME).$(K8S_NAMESPACE).svc:26502,
             - name: ZEEBE_BROKER_CLUSTER_CLUSTERNAME
-              value: camunda-8-zeebe
+              value: camunda-zeebe
             - name: ZEEBE_LOG_LEVEL
               value: "info"
             - name: ZEEBE_BROKER_CLUSTER_PARTITIONSCOUNT
@@ -1148,7 +1148,7 @@ spec:
             - name: ZEEBE_BROKER_EXPORTERS_ELASTICSEARCH_CLASSNAME
               value: "io.camunda.zeebe.exporter.ElasticsearchExporter"
             - name: ZEEBE_BROKER_EXPORTERS_ELASTICSEARCH_ARGS_URL
-              value: "http://camunda-8-elasticsearch:9200"
+              value: "http://camunda-elasticsearch:9200"
             - name: ZEEBE_BROKER_EXPORTERS_ELASTICSEARCH_ARGS_INDEX_PREFIX
               value: "zeebe-record"
             - name: ZEEBE_BROKER_NETWORK_COMMANDAPI_PORT
@@ -1206,7 +1206,7 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: camunda-8-zeebe
+            name: camunda-zeebe
             defaultMode: 492
         - name: exporters
           emptyDir: {}
@@ -1240,11 +1240,11 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: "camunda-8-operate-test-connection"
+  name: "camunda-operate-test-connection"
   labels:
     app: camunda-platform
     app.kubernetes.io/name: camunda-platform
-    app.kubernetes.io/instance: camunda-8
+    app.kubernetes.io/instance: camunda
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: camunda-platform
     helm.sh/chart: camunda-platform-9.0.2
@@ -1257,5 +1257,5 @@ spec:
     - name: wget
       image: busybox
       command: ['wget']
-      args:  ['camunda-8-operate:80']
+      args:  ['camunda-operate:80']
   restartPolicy: Never
