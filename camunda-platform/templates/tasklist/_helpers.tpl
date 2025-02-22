@@ -19,6 +19,7 @@ Defines extra labels for tasklist.
 */}}
 {{ define "tasklist.extraLabels" -}}
 app.kubernetes.io/component: tasklist
+app.kubernetes.io/version: {{ include "camundaPlatform.imageTagByParams" (dict "base" .Values.global "overlay" .Values.tasklist) | quote }}
 {{- end }}
 
 {{/*
@@ -36,20 +37,18 @@ Defines match labels for tasklist, which are extended by sub-charts and should b
 */}}
 {{- define "tasklist.matchLabels" -}}
     {{- include "camundaPlatform.matchLabels" . }}
-    {{- "\n" }}
-    {{- include "tasklist.extraLabels" . }}
+app.kubernetes.io/component: tasklist
 {{- end -}}
 
 {{/*
 [tasklist] Create the name of the service account to use
 */}}
 {{- define "tasklist.serviceAccountName" -}}
-    {{- if .Values.tasklist.serviceAccount.enabled }}
-        {{- default (include "tasklist.fullname" .) .Values.tasklist.serviceAccount.name }}
-    {{- else }}
-        {{- default "default" .Values.tasklist.serviceAccount.name }}
-    {{- end }}
-{{- end }}
+    {{- include "camundaPlatform.serviceAccountName" (dict
+        "component" "tasklist"
+        "context" $
+    ) -}}
+{{- end -}}
 
 {{/*
 [tasklist] Get the image pull secrets.
@@ -66,5 +65,5 @@ Defines match labels for tasklist, which are extended by sub-charts and should b
 {{- end -}}
 
 {{- define "tasklist.authAudience" -}}
-  {{- .Values.global.identity.auth.tasklist.audience -}}
+  {{- .Values.global.identity.auth.tasklist.audience | default "tasklist-api" -}}
 {{- end -}}

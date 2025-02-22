@@ -1,462 +1,128 @@
 global:
-  multitenancy:
-    enabled: false
-  ingress:
-    enabled: false
-    className: nginx
-    annotations:
-      ingress.kubernetes.io/rewrite-target: "/"
-      nginx.ingress.kubernetes.io/ssl-redirect: "false"
-      nginx.ingress.kubernetes.io/proxy-buffer-size: "128k"
-    host: ""
-    tls:
-      enabled: false
-      secretName: camunda-platform
-
-  elasticsearch:
-    disableExporter: true
-
-  zeebeClusterName: "{{ .Release.Name }}-zeebe"
-  ## @param global.zeebePort defines the port which is used for the Zeebe Gateway. This port accepts the GRPC Client messages and forwards them to the Zeebe Brokers.
-  zeebePort: 26500
-
-  # Identity configuration to configure identity specifics on global level, which can be accessed by other sub-charts
-  identity:
-    # THIS IS A PRE ALPHA FEATURE, DO NOT USE IT.
-    ## @skip global.identity.service
-    service:
-      ## @skip global.identity.service.url
-      url:
-    keycloak:
-      # Identity.keycloak.internal if true, it will configure an extra service with type "ExternalName".
-      ## @param global.identity.keycloak.internal It's useful for using existing Keycloak in another namespace with and access it with the combined Ingress.
-      internal: false
-
-    ## @extra global.identity.auth configuration, to configure identity authentication setup
-    auth:
-      ## @param global.identity.auth.enabled if true, enables the identity authentication otherwise basic-auth will be used on all services.
-      enabled: true
-      ## @param global.identity.auth.issuer defines the issuer name, which is used by the services to validate the JWT tokens.
-      issuer: ""
-      ## @param global.identity.auth.issuerBackendUrl defines the issuer backend URL, which is used by the services to validate the JWT tokens in a container to container context.
-      issuerBackendUrl: ""
-      ## @param global.identity.auth.tokenUrl defines the token URL, which is used by the services to request JWT tokens.
-      tokenUrl: ""
-      ## @param global.identity.auth.jwksUrl defines the JWKS URL, which is used by the services to validate the JWT tokens.
-      jwksUrl: ""
-      ## @param global.identity.auth.type defines the type of authentication which should be used. Defaults to Keycloak
-      type: "KEYCLOAK"
-
-      #  defines the token issuer (Keycloak) URL, where the services can request JWT tokens.
-      # Should be publicly accessible, per default we assume a port-forward to Keycloak (18080) is created before login.
-      ## @param global.identity.auth.publicIssuerUrl Can be overwritten if ingress is in use and an external IP is available.
-      publicIssuerUrl: "https://keycloak.camunda.integration-linshare.org/auth/realms/camunda-platform"
-      ## @extra global.identity.auth.connectors configuration to configure Connectors authentication specifics on global level, which can be accessed by other sub-charts
-      connectors:
-        existingSecret: ""
-
-      ## @extra global.identity.auth.zeebe configuration to configure Zeebe authentication specifics on global level, which can be accessed by other sub-charts
-      zeebe:
-        clientId: zeebe
-        existingSecret: ""
-        audience: zeebe-api
-        tokenScope:
-
-  multiregion:
-    regions: 1
-    regionId: 0
-    installationType: normal
-
-## @section Zeebe Parameters
-## @extra zeebe configuration for the Zeebe sub chart. Contains configuration for the Zeebe broker and related resources.
-zeebe:
-  enabled: true
-  ## @param zeebe.clusterSize defines the amount of brokers (=replicas), which are deployed via helm
-  clusterSize: "3"
-  ## @param zeebe.partitionCount defines how many zeebe partitions are set up in the cluster
-  partitionCount: "3"
-  ## @param zeebe.replicationFactor defines how each partition is replicated, the value defines the number of nodes
-  replicationFactor: "3"
-  ## @extra zeebe.env can be used to set extra environment variables in each zeebe broker container
-  env:
-    - name: ZEEBE_BROKER_DATA_SNAPSHOTPERIOD
-      value: "5m"
-    - name: ZEEBE_BROKER_DATA_DISK_FREESPACE_REPLICATION
-      value: "2GB"
-    - name: ZEEBE_BROKER_DATA_DISK_FREESPACE_PROCESSING
-      value: "3GB"
-  javaOpts: >-
-    -XX:+HeapDumpOnOutOfMemoryError
-    -XX:HeapDumpPath=/usr/local/zeebe/data
-    -XX:ErrorFile=/usr/local/zeebe/data/zeebe_error%p.log
-    -XX:+ExitOnOutOfMemoryError
-  ## @param zeebe.cpuThreadCount defines how many threads can be used for the processing on each broker pod
-  cpuThreadCount: "1"
-  ## @param zeebe.ioThreadCount defines how many threads can be used for the exporting on each broker pod
-  ioThreadCount: "1"
-  resources:
-    requests:
-      cpu: 100m
-      memory: 500Mi
-    limits:
-      cpu: 200m
-      memory: 1000Mi
-
-  ## @param zeebe.persistenceType defines the type of persistence which is used by Zeebe. Possible values are: disk, local and memory.
-  #   disk  - means a persistence volume claim is configured and used
-  #   local - means the data is stored into the container, no volumeMount nor volume nor claim is configured
-  #   memory   - means zeebe uses a tmpfs for the data persistence, be aware that this takes the limits into account
-  persistenceType: disk
-  ## @param zeebe.pvcSize defines the persistent volume claim size, which is used by each broker pod https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims
-  pvcSize: "10Gi"
-  ## @param zeebe.pvcAccessModes can be used to configure the persistent volume claim access mode https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes
-  pvcAccessModes: ["ReadWriteOnce"]
-
-## @section Zeebe Gateway Parameters
-## @extra Gateway configuration to define properties related to the standalone gateway
-zeebe-gateway:
-  replicas: 2
-  logLevel: info
-  javaOpts: >-
-    -XX:+ExitOnOutOfMemoryError
-
-  ## @param zeebe-gateway.env can be used to set extra environment variables in each gateway container
-  env: []
-  ## @extra zeebe-gateway.configMap configuration which will be applied to the mounted config map.
-  configMap:
-    ## @param zeebe-gateway.configMap.defaultMode can be used to set permissions on created files by default. Must be an octal value between 0000 and 0777 or a decimal value between 0 and 511.
-    # See https://github.com/kubernetes/api/blob/master/core/v1/types.go#L1615-L1623
-    defaultMode: 0744
-
-  ## @extra zeebe-gateway.serviceAccount configuration for the service account where the gateway pods are assigned to
-  serviceAccount:
-    ## @param zeebe-gateway.serviceAccount.enabled if true, enables the gateway service account
-    enabled: true
-    ## @param zeebe-gateway.serviceAccount.name can be used to set the name of the gateway service account
-    name: ""
-    ## @param zeebe-gateway.serviceAccount.annotations can be used to set the annotations of the gateway service account
-    annotations: {}
-
-  ingress:
-    enabled: true
-    className: nginx
-    annotations:
-      ingress.kubernetes.io/rewrite-target: "/"
-      nginx.ingress.kubernetes.io/ssl-redirect: "false"
-      nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
-      nginx.ingress.kubernetes.io/proxy-buffer-size: "128k"
-      cert-manager.io/cluster-issuer: le-linshare-dev
-      kubernetes.io/tls-acme: "true"
-    path: /
-    host: gateway.camunda.integration-linshare.org
-    tls:
-      enabled: true
-      secretName: camunda-platform-zeebe-gateway
-
-operate:
-  enabled: false
-
-tasklist:
-  enabled: false
-
-optimize:
-  enabled: false
-
-## @section Identity Parameters
-# Identity configuration for the identity sub chart.
-identity:
-  ## @param identity.enabled if true, the identity deployment and its related resources are deployed via a helm release
-  #
-  # Note: If using Keycloak, Identity is required by Optimize and Web Modeler.
-  #       If you need neither Optimize nor Web Modeler, make sure to disable both the Identity authentication and the applications by setting:
-  #         global.identity.auth.enabled=false
-  #         optimize.enabled=false
-  #         webModeler.enabled=false
-  enabled: true
-  ## @extra identity.firstUser configuration to configure properties of the first Identity user, which can be used to access all
-  # web applications
-  firstUser:
-    ## @param identity.firstUser.enabled if true, Identity will seed the first user in Keycloak.
-    enabled: true
-    ## @param identity.firstUser.username defines the username of the first user, needed to log in into the web applications
-    username: demo
-    ## @param identity.firstUser.password defines the password of the first user, needed to log in into the web applications
-    password: demo
-    ## @param identity.firstUser.email defines the email address of the first user; a valid email address is required to use Web Modeler
-    email: demo@example.org
-    ## @param identity.firstUser.firstName defines the first name of the first user; a name is required to use Web Modeler
-    firstName: Demo
-    ## @param identity.firstUser.lastName defines the last name of the first user; a name is required to use Web Modeler
-    lastName: User
-    ## @param identity.firstUser.existingSecret can be used to use an own existing secret for Identity first user.
-    # Currently, only password field is supported via "identity-firstuser-password" key in the secret resource.
-    existingSecret: ""
-
-  resources:
-    requests:
-      cpu: 600m
-      memory: 400Mi
-    limits:
-      cpu: 2000m
-      memory: 2Gi
-
-  fullURL: https://identity.camunda.integration-linshare.org/identity
-  contextPath: /identity
-  ingress:
-    enabled: true
-    className: nginx
-    annotations:
-      ingress.kubernetes.io/rewrite-target: "/"
-      nginx.ingress.kubernetes.io/ssl-redirect: "false"
-      nginx.ingress.kubernetes.io/proxy-buffer-size: "128k"
-      cert-manager.io/cluster-issuer: le-linshare-dev
-      kubernetes.io/tls-acme: "true"
-    path: /identity
-    host: identity.camunda.integration-linshare.org
-    tls:
-      enabled: true
-      secretName: camunda-platform-identity
-
-  ## PostgreSQL chart configuration
-  postgresql:
-    ## @param identity.postgresql.enabled Enable PostgreSQL Helm chart. Required for Multi-Tenancy.
-    enabled: false
-
-  externalDatabase:
-    enabled: false
-
-  # Identity.keycloak
-  ## @extra identity.keycloak configuration, for the keycloak dependency chart which is used by identity.
-  # For more details: https://github.com/bitnami/charts/tree/master/bitnami/keycloak#parameters
-  keycloak:
-    ## @extra identity.keycloak.postgresql configuration.
-    postgresql:
-      # https://hub.docker.com/r/bitnami/postgresql/tags
-      image:
-        ## @param identity.keycloak.postgresql.image.repository image repo
-        repository: bitnami/postgresql
-        ## @param identity.keycloak.postgresql.image.tag image tag
-        tag: 15.5.0
-      primary:
-        extraVolumes:
-        - name: tmp
-          emptyDir: {}
-        - name: config
-          emptyDir: {}
-        - name: postgresql-tmp
-          emptyDir: {}
-        extraVolumeMounts:
-        - mountPath: /tmp
-          name: tmp
-        - mountPath: /opt/bitnami/postgresql/conf
-          name: config
-        - mountPath: /opt/bitnami/postgresql/tmp
-          name: postgresql-tmp
-        containerSecurityContext:
-          enabled: true
-          privileged: false
-          readOnlyRootFilesystem: true
-          allowPrivilegeEscalation: false
-          runAsNonRoot: true
-          runAsUser: 1001
-          capabilities:
-            drop: ["ALL"]
-          seccompProfile:
-            type: RuntimeDefault
-        podSecurityContext:
-          enabled: true
-          runAsNonRoot: true
-          fsGroup: 1001
-
-    ## @param identity.keycloak.enabled is used incorporate with "global.identity.keycloak" to use your own Keycloak instead of the one comes with Camunda Helm chart
-    enabled: true
-
-    ## @extra identity.keycloak.image configuration.
-    # https://hub.docker.com/r/bitnami/keycloak/tags
-    image:
-      ## @param identity.keycloak.image.repository image repo
-      repository: bitnami/keycloak
-      ## @param identity.keycloak.image.tag image tag
-      tag: 22.0.5
-
-    proxy: edge
-
-
-    tls:
-    ## @param identity.keycloak.tls.enabled enabling tls
-      enabled: false
-
-    extraVolumes:
-      - name: config
-        emptyDir: {}
-      - name: quarkus
-        emptyDir: {}
-      - name: tmp
-        emptyDir: {}
-      - name: data-tmp
-        emptyDir: {}
-      - name: camunda-theme
-        emptyDir:
-          sizeLimit: 10Mi
-
-    initContainers:
-      - name: copy-camunda-theme
-        image: >-
-          {{- $identityImageParams := (dict "base" .Values.global "overlay" .Values.global.identity) -}}
-          {{- include "camundaPlatform.imageByParams" $identityImageParams }}
-        imagePullPolicy: "{{ .Values.global.image.pullPolicy }}"
-        command: ["sh", "-c", "cp -a /app/keycloak-theme/* /mnt"]
-        securityContext:
-          privileged: false
-          readOnlyRootFilesystem: true
-          allowPrivilegeEscalation: false
-          runAsNonRoot: true
-          # START DEV COMMENT
-          # TODO: Remove the runAsUser when the numeric ID is used in the Identity Docker image.
-          # END DEV COMMENT
-          runAsUser: 1005
-          capabilities:
-            drop: ["ALL"]
-          seccompProfile:
-            type: RuntimeDefault
-        volumeMounts:
-          - name: camunda-theme
-            mountPath: /mnt
-      - name: copy-configs
-        image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-        imagePullPolicy: "Always"
-        command: ["sh", "-c", "cp -ar /opt/bitnami/keycloak/conf/* /config && cp -a /opt/bitnami/keycloak/lib/quarkus/* /quarkus"]
-        securityContext:
-          privileged: false
-          readOnlyRootFilesystem: true
-          allowPrivilegeEscalation: false
-          runAsNonRoot: true
-          capabilities:
-            drop: ["ALL"]
-          seccompProfile:
-            type: RuntimeDefault
-        volumeMounts:
-          - name: config
-            mountPath: /config
-          - name: quarkus
-            mountPath: /quarkus
-    extraVolumeMounts:
-      - mountPath: /opt/bitnami/keycloak/conf/
-        name: config
-      - mountPath: /opt/bitnami/keycloak/lib/quarkus
-        name: quarkus
-      - name: camunda-theme
-        mountPath: /opt/bitnami/keycloak/themes/identity
-      - mountPath: /tmp
-        name: tmp
-      - mountPath: /opt/bitnami/keycloak/data/tmp
-        name: data-tmp
-
-    containerSecurityContext:
-      privileged: false
-      readOnlyRootFilesystem: true
-      allowPrivilegeEscalation: false
-      runAsNonRoot: true
-      runAsUser: 1001
-      capabilities:
-        drop: ["ALL"]
-      seccompProfile:
-        type: RuntimeDefault
-    ## @param identity.keycloak.podSecurityContext.fsGroup
-    podSecurityContext:
-      fsGroup: 1001
-    ## @param identity.keycloak.httpRelativePath defines the context for Keycloak. This config is valid for Keycloak v19.x.x only
-    # where in Keycloak v16.x.x it's hard-coded as '/auth', but in v19.x.x it's configurable.
-    # NOTE: This should be the same as ".Values.global.identity.keycloak.contextPath" plus a trailing slash,
-    # but it cannot be referenced directly because of a bug in Helm (tested with Helm v3.9.3).
-    httpRelativePath: /auth/
-    ## @extra identity.extraEnvVars
-    ## @param identity.keycloak.extraEnvVars[0].name
-    ## @param identity.keycloak.extraEnvVars[0].value
-    extraEnvVars:
-    # KEYCLOAK_PROXY_ADDRESS_FORWARDING can be used with Ingress that has SSL Termination. It will be "true" if the TLS
-    # in global Ingress is enabled, but it could be overwritten with separate Ingress setup.
-    - name: KEYCLOAK_PROXY_ADDRESS_FORWARDING
-      value: "true"
-      # value: "{{ .Values.global.ingress.tls.enabled }}"
-
-    # under "global.ingress" is enabled. However, it's possible to setup Keycloak on a separate Ingress if needed.
-    # For more details: https://github.com/bitnami/charts/tree/main/bitnami/keycloak#configure-ingress
-    ingress:
-      enabled: true
-      tls: true
-      ingressClassName: nginx
-      annotations:
-        nginx.ingress.kubernetes.io/proxy-buffer-size: "128k"
-        cert-manager.io/cluster-issuer: le-linshare-dev
-        kubernetes.io/tls-acme: "true"
-      hostname: keycloak.camunda.integration-linshare.org
-
-    ## @extra identity.keycloak.service configuration, to configure the service which is deployed along with keycloak
-    service:
-      ## @param identity.keycloak.service.type can be set to change the service type.
-      # We use clusterIP for keycloak service, since per default LoadBalancer is used, which is not supported on all cloud providers.
-      # This might prevent scheduling of the service.
-      type: ClusterIP
-    auth:
-      adminUser: admin
-      adminPassword: kQ4MIwyFiw
-
-## @section WebModeler Parameters
-# WebModeler configuration of the Web Modeler deployment
-webModeler:
-  enabled: false
-## @section WebModeler - PostgreSQL Parameters
-## @extra postgresql configuration for the postgresql dependency chart used by Web Modeler.
-postgresql:
-  enabled: false
-
-connectors:
-  ## @param connectors.enabled if true, the Connectors deployment and its related resources are deployed via a helm release
-  enabled: true
-
-  ## @extra connectors.inbound Switch for inbound mode (e.g., for webhook or polling)
-  inbound:
-    ## @param connectors.inbound.mode acceptable values: disabled, credentials, or oauth
-    mode: oauth
-    ## @extra connectors.inbound.auth configuration of the credentials authentication.
-    auth:
-      ## @param connectors.inbound.auth.existingSecret can be used to configure Secret name that contains connectors password
-      existingSecret: ""
-
-  ## @extra connectors.image configuration to configure the Connectors image specifics
-  # https://hub.docker.com/r/camunda/connectors-bundle/tags
+  # https://github.com/camunda/camunda-platform/releases
+  # https://hub.docker.com/u/camunda
   image:
-    tag: 8.4.0
-  replicas: 1
-  resources:
-    requests:
-      cpu: 1
-      memory: 1Gi
-    limits:
-      cpu: 2
-      memory: 2Gi
-
-  ingress:
-    enabled: true
-    className: nginx
-    annotations:
-      ingress.kubernetes.io/rewrite-target: "/"
-      nginx.ingress.kubernetes.io/ssl-redirect: "false"
-      nginx.ingress.kubernetes.io/proxy-buffer-size: "128k"
-      cert-manager.io/cluster-issuer: le-linshare-dev
-      kubernetes.io/tls-acme: "true"
-    path: /
-    host: connectors.camunda.integration-linshare.org
-    tls:
-      enabled: true
-      secretName: camunda-platform-connectors
+    tag:
 
 console:
-  enabled: false
+  # Camunda Enterprise repository.
+  # https://hub.docker.com/r/camunda/console/tags
+  image:
+    repository: camunda/console
+    tag: 8.6.55
+
+connectors:
+  # https://hub.docker.com/r/camunda/connectors-bundle/tags
+  image:
+    repository: camunda/connectors-bundle
+    tag: 8.6.8
+
+operate:
+  # https://hub.docker.com/r/camunda/operate/tags
+  image:
+    repository: camunda/operate
+    tag: 8.6.9
+
+optimize:
+  # https://hub.docker.com/r/camunda/optimize/tags
+  image:
+    repository: camunda/optimize
+    tag: 8.6.5
+
+tasklist:
+  # https://hub.docker.com/r/camunda/tasklist/tags
+  image:
+    repository: camunda/tasklist
+    tag: 8.6.9
+
+webModeler:
+  enabled: true
+  # https://hub.docker.com/r/camunda/web-modeler-restapi
+  image:
+    # renovate: datasource=docker depName=camunda/web-modeler-restapi
+    tag: 8.6.7
+  restapi:
+    mail:
+      smtpHost: "smtp"
+      smtpPort: 587
+      ## @param webModeler.restapi.mail.smtpUser can be used to provide a user for the SMTP server
+      smtpUser: ""
+      ## @param webModeler.restapi.mail.smtpPassword can be used to provide a password for the SMTP server; ignored if `webModeler.restapi.mail.existingSecret` is set
+      smtpPassword: ""
+      ## @param webModeler.restapi.mail.smtpTlsEnabled if true, enforces TLS encryption for SMTP connections (using STARTTLS)
+      smtpTlsEnabled: true
+      ## @param webModeler.restapi.mail.existingSecret can be used to provide the name of an existing secret resource containing the SMTP password
+      existingSecret:
+      ## @param webModeler.restapi.mail.existingSecretPasswordKey can be used to provide the name of an existing secret key containing the SMTP password
+      existingSecretPasswordKey: "smtp-password"
+      ## @param webModeler.restapi.mail.fromAddress defines the email address that will be displayed as the sender of emails sent by WebModeler
+      # NOTE: This value is mandatory.
+      fromAddress: "camunda"
+      ## @param webModeler.restapi.mail.fromName defines the name that will be displayed as the sender of emails sent by WebModeler
+      fromName: "Camunda 8"
+
+zeebe:
+  # https://hub.docker.com/r/camunda/zeebe/tags
+  image:
+    repository: camunda/zeebe
+    tag: 8.6.9
+
+zeebeGateway:
+  # https://hub.docker.com/r/camunda/zeebe/tags
+  image:
+    repository: camunda/zeebe
+    tag: 8.6.9
+
+#
+# Identity
+#
+
+identity:
+  # https://hub.docker.com/r/camunda/identity/tags
+  image:
+    repository: camunda/identity
+    tag: 8.6.8
+
+identityKeycloak:
+  # https://hub.docker.com/r/bitnami/keycloak/tags
+  image:
+    repository: bitnami/keycloak
+    tag: 25.0.6
+  postgresql:
+    # https://hub.docker.com/r/bitnami/postgresql/tags
+    image:
+      repository: bitnami/postgresql
+      tag: 15.10.0-debian-12-r2
+
+#
+# Elasticsearch
+#
 
 elasticsearch:
-  enabled: false
+  # https://hub.docker.com/r/bitnami/elasticsearch/tags
+  image:
+    repository: bitnami/elasticsearch
+    tag: 8.15.4
+  master:
+    ## @param elasticsearch.master.replicaCount defines number of master-elegible replicas to deploy
+    replicaCount: 3
+    ## @param elasticsearch.master.podAntiAffinityPreset defines Pod anti-affinity preset. Ignored if master.affinity is set
+    podAntiAffinityPreset: hard
+    containerSecurityContext:
+    ## @param elasticsearch.master.containerSecurityContext.readOnlyRootFilesystem
+      readOnlyRootFilesystem: true
+    ## @param elasticsearch.master.masterOnly
+    masterOnly: false
+    ## @param elasticsearch.master.heapSize
+    heapSize: 1024m
+    persistence:
+      ## @param elasticsearch.master.persistence.size
+      size: 64Gi
 
 prometheusServiceMonitor:
-  enabled: false
+  ## @param prometheusServiceMonitor.enabled if true then a service monitor will be deployed, which allows an installed prometheus controller to scrape metrics from the deployed pods
+  enabled: true
+  ## @extra promotheuServiceMonitor.labels can be set to configure extra labels, which will be added to the servicemonitor and can be used on the prometheus controller for selecting the servicemonitors
+  labels:
+  ## @param prometheusServiceMonitor.labels.release
+    release: obs-stack

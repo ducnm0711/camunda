@@ -7,6 +7,8 @@ metadata:
   annotations: {{- toYaml .Values.global.annotations | nindent 4 }}
 spec:
   replicas: {{ .Values.connectors.replicas }}
+  strategy:
+    type: RollingUpdate
   selector:
     matchLabels: {{- include "connectors.matchLabels" . | nindent 6 }}
   template:
@@ -16,8 +18,10 @@ spec:
         {{- if .Values.connectors.podLabels }}
         {{- toYaml .Values.connectors.podLabels | nindent 8 }}
         {{- end }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/connectors/configmap.yaml") . | sha256sum }}
       {{- if .Values.connectors.podAnnotations }}
-      annotations: {{- toYaml  .Values.connectors.podAnnotations | nindent 8 }}
+      {{- toYaml .Values.connectors.podAnnotations | nindent 8 }}
       {{- end }}
     spec:
       imagePullSecrets: {{- include "connectors.imagePullSecrets" . | nindent 8 }}
@@ -28,82 +32,73 @@ spec:
           image: {{ include "camundaPlatform.imageByParams" (dict "base" .Values.global "overlay" .Values.connectors) }}
           imagePullPolicy: {{ .Values.global.image.pullPolicy }}
           {{- if .Values.connectors.containerSecurityContext }}
-          securityContext: {{- toYaml .Values.connectors.containerSecurityContext | nindent 12 }}
+          securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" $.Values.connectors.containerSecurityContext "context" $) | nindent 12 }}
           {{- end }}
           ports:
             - containerPort: {{ .Values.connectors.service.serverPort }}
               name: {{ .Values.connectors.service.serverName }}
               protocol: TCP
           env:
-            - name: SERVER_PORT
-              value: {{ .Values.connectors.service.serverPort | quote }}
-            {{- if .Values.connectors.contextPath }}
-            - name: SERVER_SERVLET_CONTEXT_PATH
-              value: {{ .Values.connectors.contextPath | quote }}
-            {{- end }}
-          {{- if eq .Values.connectors.inbound.mode "disabled" }}
-            - name: CAMUNDA_CONNECTOR_POLLING_ENABLED
-              value: "false"
-            - name: CAMUNDA_CONNECTOR_WEBHOOK_ENABLED
-              value: "false"
-          {{- end }}
+            - name: CAMUNDA_LICENSE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "camundaPlatform.licenseSecretName" . }}
+                  key: {{ include "camundaPlatform.licenseSecretKey" . }}
           {{- if eq .Values.connectors.inbound.mode "credentials" }}
-            - name: CAMUNDA_OPERATE_CLIENT_URL
-              value: {{ include "camundaPlatform.operateURL" . | quote }}
-            - name: CAMUNDA_OPERATE_CLIENT_USERNAME
-              value: connectors
             - name: CAMUNDA_OPERATE_CLIENT_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ include "connectors.authCredentialsSecretName" . }}
-                  key: connectors-secret
+                  key: {{ .Values.connectors.inbound.auth.existingSecretKey }}
           {{- end }}
-          {{- if and .Values.global.identity.auth.enabled (eq .Values.connectors.inbound.mode "oauth") }}
-            - name: CAMUNDA_OPERATE_CLIENT_KEYCLOAK-TOKEN-URL
-              value: {{ include "camundaPlatform.authIssuerBackendUrlTokenEndpoint" . | quote }}
-            - name: CAMUNDA_OPERATE_CLIENT_CLIENT-ID
-              value: connectors
-            - name: CAMUNDA_OPERATE_CLIENT_CLIENT-SECRET
+          {{- if .Values.global.identity.auth.enabled }}
+            {{- if eq .Values.connectors.inbound.mode "oauth" }}
+            - name: CAMUNDA_IDENTITY_CLIENT_SECRET
               {{- if and .Values.global.identity.auth.connectors.existingSecret (not (typeIs "string" .Values.global.identity.auth.connectors.existingSecret)) }}
               valueFrom:
                 secretKeyRef:
                   name: {{ include "common.secrets.name" (dict "existingSecret" .Values.global.identity.auth.connectors.existingSecret "context" $) }}
-                  key: connectors-secret
+                  key: {{ .Values.global.identity.auth.connectors.existingSecretKey }}
               {{- else }}
               valueFrom:
                 secretKeyRef:
                   name: {{ include "camundaPlatform.identitySecretName" (dict "context" . "component" "connectors") }}
-                  key: connectors-secret
+                  key: {{ .Values.global.identity.auth.connectors.existingSecretKey }}
               {{- end }}
-            - name: CAMUNDA_OPERATE_CLIENT_URL
-              value: {{ include "camundaPlatform.operateURL" . | quote }}
-          {{- end }}
-            - name: ZEEBE_CLIENT_BROKER_GATEWAY-ADDRESS
-              value: {{ include "connectors.zeebeEndpoint" . | quote }}
-            - name: ZEEBE_CLIENT_SECURITY_PLAINTEXT
-              value: "true"
-          {{- if .Values.global.identity.auth.enabled }}
+            {{- end }}
             - name: ZEEBE_CLIENT_ID
-              value: zeebe
+              value: {{ tpl .Values.global.identity.auth.zeebe.clientId $ | quote }}
             - name: ZEEBE_CLIENT_SECRET
               {{- if and .Values.global.identity.auth.zeebe.existingSecret (not (typeIs "string" .Values.global.identity.auth.zeebe.existingSecret)) }}
               valueFrom:
                 secretKeyRef:
                   name: {{ include "common.secrets.name" (dict "existingSecret" .Values.global.identity.auth.zeebe.existingSecret "context" $) }}
-                  key: zeebe-secret
+                  key: {{ .Values.global.identity.auth.zeebe.existingSecretKey }}
               {{- else }}
               valueFrom:
                 secretKeyRef:
                   name: {{ include "camundaPlatform.identitySecretName" (dict "context" . "component" "zeebe") }}
-                  key: zeebe-secret
+                  key: {{ .Values.global.identity.auth.zeebe.existingSecretKey }}
               {{- end }}
             - name: ZEEBE_AUTHORIZATION_SERVER_URL
               value: {{ include "camundaPlatform.authIssuerBackendUrlTokenEndpoint" . | quote }}
             - name: ZEEBE_TOKEN_AUDIENCE
-              value: zeebe-api
+              value: {{ include "zeebe.authAudience" . | quote }}
+            {{- if .Values.global.identity.auth.zeebe.tokenScope }}
+            - name: ZEEBE_TOKEN_SCOPE
+              value: {{ include "zeebe.authTokenScope" . | quote }}
+            {{- end }}
           {{- end }}
           {{- if .Values.connectors.env}}
             {{ .Values.connectors.env | toYaml | nindent 12 }}
+          {{- end }}
+          envFrom:
+          {{- if .Values.global.identity.auth.enabled }}
+            - configMapRef:
+                name: {{ include "camundaPlatform.fullname" . }}-identity-env-vars
+          {{- end }}
+          {{- if .Values.connectors.envFrom -}}
+            {{ .Values.connectors.envFrom | toYaml | nindent 12 }}
           {{- end }}
           {{- if .Values.connectors.command}}
           command: {{ toYaml .Values.connectors.command | nindent 12 }}
@@ -146,6 +141,14 @@ spec:
           volumeMounts:
             - mountPath: /tmp
               name: tmp
+            - name: config
+              mountPath: /config/application.yml
+              subPath: application.yml
+          {{- range $key, $val := .Values.connectors.extraConfiguration }}
+            - name: config
+              mountPath: /config/{{ $key }}
+              subPath: {{ $key }}
+          {{- end }}
           {{- if .Values.connectors.extraVolumeMounts }}
             {{- .Values.connectors.extraVolumeMounts | toYaml | nindent 12 }}
           {{- end }}
@@ -155,14 +158,21 @@ spec:
       volumes:
         - name: tmp
           emptyDir: {}
+        - name: config
+          configMap:
+            name: {{ include "connectors.fullname" . }}-configuration
       {{- if .Values.connectors.extraVolumes }}
         {{- .Values.connectors.extraVolumes | toYaml | nindent 8 }}
       {{- end }}
-      {{- if .Values.connectors.serviceAccount.name}}
-      serviceAccountName: {{ .Values.connectors.serviceAccount.name }}
+      serviceAccountName: {{ include "connectors.serviceAccountName" . }}
+      {{- if .Values.connectors.dnsConfig }}
+      dnsConfig: {{- toYaml .Values.connectors.dnsConfig | nindent 8 }}
+      {{- end }}
+      {{- if .Values.connectors.dnsPolicy }}
+      dnsPolicy: {{ .Values.connectors.dnsPolicy | quote }}
       {{- end }}
       {{- if .Values.connectors.podSecurityContext }}
-      securityContext: {{- toYaml .Values.connectors.podSecurityContext | nindent 8 }}
+      securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" $.Values.connectors.podSecurityContext "context" $) | nindent 8 }}
       {{- end }}
       {{- with .Values.connectors.nodeSelector }}
       nodeSelector:

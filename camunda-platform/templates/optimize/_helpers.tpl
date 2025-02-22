@@ -17,6 +17,7 @@ Defines extra labels for optimize.
 */}}
 {{ define "optimize.extraLabels" -}}
 app.kubernetes.io/component: optimize
+app.kubernetes.io/version: {{ include "camundaPlatform.imageTagByParams" (dict "base" .Values.global "overlay" .Values.optimize) | quote }}
 {{- end }}
 
 {{/*
@@ -34,20 +35,18 @@ Defines match labels for optimize, which are extended by sub-charts and should b
 */}}
 {{- define "optimize.matchLabels" -}}
     {{- include "camundaPlatform.matchLabels" . }}
-    {{- "\n" }}
-    {{- include "optimize.extraLabels" . }}
+app.kubernetes.io/component: optimize
 {{- end -}}
 
 {{/*
 [optimize] Create the name of the service account to use
 */}}
 {{- define "optimize.serviceAccountName" -}}
-    {{- if .Values.optimize.serviceAccount.enabled }}
-        {{- default (include "optimize.fullname" .) .Values.optimize.serviceAccount.name }}
-    {{- else }}
-        {{- default "default" .Values.optimize.serviceAccount.name }}
-    {{- end }}
-{{- end }}
+    {{- include "camundaPlatform.serviceAccountName" (dict
+        "component" "optimize"
+        "context" $
+    ) -}}
+{{- end -}}
 
 {{/*
 [optimize] Get the image pull secrets.
@@ -64,5 +63,5 @@ Defines match labels for optimize, which are extended by sub-charts and should b
 {{- end -}}
 
 {{- define "optimize.authAudience" -}}
-  {{- .Values.global.identity.auth.optimize.audience -}}
+  {{- .Values.global.identity.auth.optimize.audience | default "optimize-api" -}}
 {{- end -}}

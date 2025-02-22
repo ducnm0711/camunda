@@ -13,14 +13,15 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 
 {{ define "connectors.zeebeEndpoint" }}
-  {{- include "zeebe.names.gateway" . | replace "\"" "" -}}:{{- index .Values "zeebe-gateway" "service" "gatewayPort" -}}
+  {{- include "zeebe.names.gateway" . | replace "\"" "" -}}:{{- .Values.zeebeGateway.service.grpcPort -}}
 {{- end -}}
 
 {{- define "connectors.fullname" -}}
-{{- /* TODO: Refactor this when more sub-charts are flatten and moved to the main chart. */}}
-    {{- $connectorsValues := deepCopy . -}}
-    {{- $_ := set $connectorsValues.Values "nameOverride" "connectors" -}}
-    {{- include "camundaPlatform.fullname" $connectorsValues -}}
+    {{- include "camundaPlatform.componentFullname" (dict
+        "componentName" "connectors"
+        "componentValues" .Values.connectors
+        "context" $
+    ) -}}
 {{- end -}}
 
 {{/*
@@ -28,6 +29,7 @@ Defines extra labels for connectors.
 */}}
 {{- define "connectors.extraLabels" -}}
 app.kubernetes.io/component: connectors
+app.kubernetes.io/version: {{ include "camundaPlatform.imageTagByParams" (dict "base" .Values.global "overlay" .Values.connectors) | quote }}
 {{- end -}}
 
 {{/*
@@ -43,19 +45,18 @@ Defines match labels for connectors, which are extended by sub-charts and should
 */}}
 {{- define "connectors.matchLabels" -}}
 {{- template "camundaPlatform.matchLabels" . }}
-{{ template "connectors.extraLabels" . }}
+app.kubernetes.io/component: connectors
 {{- end -}}
+
 {{/*
 [connectors] Create the name of the service account to use
 */}}
 {{- define "connectors.serviceAccountName" -}}
-{{- if .Values.connectors.serviceAccount.enabled }}
-{{- default (include "connectors.fullname" .) .Values.connectors.serviceAccount.name }}
-{{- else }}
-{{- default "default" .Values.connectors.serviceAccount.name }}
-{{- end }}
-
-{{- end }}
+    {{- include "camundaPlatform.serviceAccountName" (dict
+        "component" "connectors"
+        "context" $
+    ) -}}
+{{- end -}}
 
 {{/*
 [connectors] Create the name of the auth credentials
@@ -63,6 +64,13 @@ Defines match labels for connectors, which are extended by sub-charts and should
 {{- define "connectors.authCredentialsSecretName" -}}
 {{- $name := .Release.Name -}}
 {{- printf "%s-connectors-auth-credentials" $name | trunc 63 | trimSuffix "-" | quote -}}
+{{- end }}
+
+{{/*
+[connectors] Defines the auth client
+*/}}
+{{- define "connectors.authClientId" -}}
+  {{- .Values.global.identity.auth.connectors.clientId -}}
 {{- end }}
 
 {{/*

@@ -3,7 +3,7 @@
 {{/*
 [zeebe] Create a default fully qualified app name.
 */}}
-{{- define "zeebe.fullname.borker" -}}
+{{- define "zeebe.fullname.broker" -}}
     {{- include "camundaPlatform.componentFullname" (dict
         "componentName" "zeebe"
         "componentValues" .Values.zeebe
@@ -27,6 +27,7 @@
 */}}
 {{ define "zeebe.extraLabels.broker" -}}
 app.kubernetes.io/component: zeebe-broker
+app.kubernetes.io/version: {{ include "camundaPlatform.imageTagByParams" (dict "base" .Values.global "overlay" .Values.zeebe) | quote }}
 {{- end }}
 
 {{/*
@@ -44,20 +45,19 @@ app.kubernetes.io/component: zeebe-broker
 */}}
 {{- define "zeebe.matchLabels.broker" -}}
     {{- include "camundaPlatform.matchLabels" . }}
-    {{- "\n" }}
-    {{- include "zeebe.extraLabels.broker" . }}
+app.kubernetes.io/component: zeebe-broker
 {{- end -}}
 
 {{/*
 [zeebe] Create the name of the service account to use.
 */}}
 {{- define "zeebe.serviceAccountName.broker" -}}
-    {{- if .Values.zeebe.serviceAccount.enabled }}
-        {{- default (include "zeebe.fullname.borker" .) .Values.zeebe.serviceAccount.name }}
-    {{- else }}
-        {{- default "default" .Values.zeebe.serviceAccount.name }}
-    {{- end }}
-{{- end }}
+    {{- if .Values.zeebe.serviceAccount.enabled -}}
+        {{- default (include "zeebe.fullname.broker" .) .Values.zeebe.serviceAccount.name -}}
+    {{- else -}}
+        {{- default "default" .Values.zeebe.serviceAccount.name -}}
+    {{- end -}}
+{{- end -}}
 
 {{/*
 [zeebe] Get the image pull secrets.
@@ -69,10 +69,11 @@ app.kubernetes.io/component: zeebe-broker
     ) -}}
 {{- end }}
 
-{{- define "zeebe.audience"}}
-    {{- .Values.global.identity.auth.zeebe.audience -}}
+{{- define "zeebe.authAudience" }}
+    {{- .Values.global.identity.auth.zeebe.audience | default "zeebe-api" -}}
 {{- end -}}
 
-{{- define "zeebe.tokenScope"}}
+{{- define "zeebe.authTokenScope" }}
     {{- .Values.global.identity.auth.zeebe.tokenScope -}}
 {{- end -}}
+

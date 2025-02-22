@@ -48,19 +48,19 @@ helm -n camunda diff upgrade --install camunda camunda-platform -f values-no-aut
 ```
 ## Install/Upgrade with Identity Oauth
 ```
-export TASKLIST_SECRET=$(kubectl -n camunda get secret "camunda-8-tasklist-identity-secret" -o jsonpath="{.data.tasklist-secret}" | base64 --decode)
-export OPTIMIZE_SECRET=$(kubectl -n camunda get secret "camunda-8-optimize-identity-secret" -o jsonpath="{.data.optimize-secret}" | base64 --decode)
-export OPERATE_SECRET=$(kubectl -n camunda get secret "camunda-8-operate-identity-secret" -o jsonpath="{.data.operate-secret}" | base64 --decode)
-export CONNECTORS_SECRET=$(kubectl -n camunda get secret "camunda-8-connectors-identity-secret" -o jsonpath="{.data.connectors-secret}" | base64 --decode)
-export ZEEBE_SECRET=$(kubectl -n camunda get secret "camunda-8-zeebe-identity-secret" -o jsonpath="{.data.zeebe-secret}" | base64 --decode)
-export KEYCLOAK_ADMIN_SECRET=$(kubectl -n camunda get secret "camunda-8-keycloak" -o jsonpath="{.data.admin-password}" | base64 --decode)
-export KEYCLOAK_MANAGEMENT_SECRET=$(kubectl -n camunda get secret "camunda-8-keycloak" -o jsonpath="{.data.management-password}" | base64 --decode)
-export POSTGRESQL_SECRET=$(kubectl -n camunda get secret "camunda-8-postgresql" -o jsonpath="{.data.postgres-password}" | base64 --decode)
-export CONSOLE_SECRET=$(kubectl -n camunda get secret camunda-8-console-identity-secret -o jsonpath="{.data.console-secret}" | base64 -d)
+export TASKLIST_SECRET=$(kubectl -n camunda get secret "camunda-tasklist-identity-secret" -o jsonpath="{.data.tasklist-secret}" | base64 --decode)
+export OPTIMIZE_SECRET=$(kubectl -n camunda get secret "camunda-optimize-identity-secret" -o jsonpath="{.data.optimize-secret}" | base64 --decode)
+export OPERATE_SECRET=$(kubectl -n camunda get secret "camunda-operate-identity-secret" -o jsonpath="{.data.operate-secret}" | base64 --decode)
+export CONNECTORS_SECRET=$(kubectl -n camunda get secret "camunda-connectors-identity-secret" -o jsonpath="{.data.connectors-secret}" | base64 --decode)
+export ZEEBE_SECRET=$(kubectl -n camunda get secret "camunda-zeebe-identity-secret" -o jsonpath="{.data.zeebe-secret}" | base64 --decode)
+export KEYCLOAK_ADMIN_SECRET=$(kubectl -n camunda get secret "camunda-keycloak" -o jsonpath="{.data.admin-password}" | base64 --decode)
+export KEYCLOAK_MANAGEMENT_SECRET=$(kubectl -n camunda get secret "camunda-keycloak" -o jsonpath="{.data.management-password}" | base64 --decode)
+export POSTGRESQL_SECRET=$(kubectl -n camunda get secret "camunda-postgresql" -o jsonpath="{.data.postgres-password}" | base64 --decode)
+export CONSOLE_SECRET=$(kubectl -n camunda get secret camunda-console-identity-secret -o jsonpath="{.data.console-secret}" | base64 -d)
 ```
 
 ```
-helm -n camunda diff upgrade --install camunda-8 camunda-platform -f values.yaml\
+helm -n camunda diff upgrade --install camunda camunda-platform -f values.yaml\
   --set global.identity.auth.tasklist.existingSecret=$TASKLIST_SECRET \
   --set global.identity.auth.optimize.existingSecret=$OPTIMIZE_SECRET \
   --set global.identity.auth.operate.existingSecret=$OPERATE_SECRET \

@@ -8,6 +8,8 @@ metadata:
   annotations:
     {{- toYaml .Values.global.annotations | nindent 4 }}
 spec:
+  strategy:
+    type: Recreate
   replicas: 1
   selector:
     matchLabels:
@@ -19,8 +21,9 @@ spec:
         {{- if .Values.optimize.podLabels }}
         {{- toYaml .Values.optimize.podLabels | nindent 8 }}
         {{- end }}
-      {{- if .Values.optimize.podAnnotations }}
       annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/optimize/configmap.yaml") . | sha256sum }}
+      {{- if .Values.optimize.podAnnotations }}
         {{- toYaml .Values.optimize.podAnnotations | nindent 8 }}
       {{- end }}
     spec:
@@ -35,25 +38,87 @@ spec:
           image: {{ include "camundaPlatform.imageByParams" (dict "base" .Values.global "overlay" .Values.optimize) }}
           command: ['./upgrade/upgrade.sh', '--skip-warning']
           {{- if .Values.optimize.containerSecurityContext }}
-          securityContext: {{- toYaml .Values.optimize.containerSecurityContext | nindent 12 }}
+          securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" $.Values.optimize.containerSecurityContext "context" $) | nindent 12 }}
           {{- end }}
           env:
-            - name: CAMUNDA_OPTIMIZE_ZEEBE_ENABLED
+            - name: CAMUNDA_LICENSE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "camundaPlatform.licenseSecretName" . }}
+                  key: {{ include "camundaPlatform.licenseSecretKey" . }}
+            {{- if and .Values.global.elasticsearch.external  (include "elasticsearch.passwordIsDefined" .) }}
+            - name: CAMUNDA_OPTIMIZE_ELASTICSEARCH_SECURITY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "elasticsearch.authExistingSecret" . | quote }}
+                  key: {{ include "elasticsearch.authExistingSecretKey" . | quote }}
+            {{- end }}
+            {{- if .Values.global.opensearch.enabled }}
+              {{- if eq .Values.global.opensearch.url.protocol "https" }}
+            - name: CAMUNDA_OPTIMIZE_OPENSEARCH_SSL_ENABLED
               value: "true"
-            - name: CAMUNDA_OPTIMIZE_ZEEBE_PARTITION_COUNT
-              value: {{ .Values.optimize.partitionCount | quote }}
+              {{- end }}
+            - name: CAMUNDA_OPTIMIZE_DATABASE
+              value: opensearch
+            - name: CAMUNDA_OPTIMIZE_OPENSEARCH_HTTP_PORT
+              value: {{ .Values.global.opensearch.url.port | quote }}
+            - name: CAMUNDA_OPTIMIZE_OPENSEARCH_HOST
+              value: {{ include "camundaPlatform.opensearchHost" . | quote }}
+            - name: CAMUNDA_OPTIMIZE_OPENSEARCH_SECURITY_USERNAME
+              value: {{ .Values.global.opensearch.auth.username | quote }}
+            {{- if or .Values.global.opensearch.auth.existingSecret .Values.global.opensearch.auth.password }}
+            - name: CAMUNDA_OPTIMIZE_OPENSEARCH_SECURITY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "opensearch.authExistingSecret" . | quote }}
+                  key: {{ include "opensearch.authExistingSecretKey" . | quote }}
+            {{- end}}
+            {{- end }}
+            {{- if or .Values.global.elasticsearch.tls.existingSecret .Values.global.opensearch.tls.existingSecret }}
+            - name: JAVA_TOOL_OPTIONS
+              value: -Djavax.net.ssl.trustStore=/optimize/certificates/externaldb.jks
+            {{- end }}
+            {{- if .Values.global.elasticsearch.enabled }}
             - name: OPTIMIZE_ELASTICSEARCH_HOST
               value: {{ include "camundaPlatform.elasticsearchHost" . | quote }}
             - name: OPTIMIZE_ELASTICSEARCH_HTTP_PORT
-              value: {{ .Values.global.elasticsearch.port | quote }}
+              value: {{ .Values.global.elasticsearch.url.port | quote }}
+            {{- end }}
+            {{- if .Values.global.opensearch.aws.enabled }}
+            - name: CAMUNDA_OPTIMIZE_OPENSEARCH_AWS_ENABLED
+              value: "true"
+            {{- end }}
+            {{- with .Values.optimize.env }}
+            {{- tpl (toYaml .) $ | nindent 12 }}
+            {{- end }}
             {{- with .Values.optimize.migration.env }}
             {{- tpl (toYaml .) $ | nindent 12 }}
             {{- end }}
+          resources:
+            {{- toYaml .Values.optimize.migration.resources | nindent 12 }}
           volumeMounts:
             - mountPath: /tmp
               name: tmp
             - mountPath: /camunda
               name: camunda
+            - mountPath: /optimize/config/environment-config.yaml
+              subPath: environment-config.yaml
+              name: environment-config
+            {{- if .Values.global.identity.auth.enabled }}
+            - mountPath: /optimize/config/application-ccsm.yaml
+              subPath: application-ccsm.yaml
+              name: environment-config
+            {{- end }}
+            {{- range $key, $val := .Values.optimize.extraConfiguration }}
+            - name: environment-config
+              mountPath: /optimize/config/{{ $key }}
+              subPath: {{ $key }}
+            {{- end }}
+            {{- if or .Values.global.elasticsearch.tls.existingSecret .Values.global.opensearch.tls.existingSecret }}
+            - name: keystore
+              mountPath: /optimize/certificates/externaldb.jks
+              subPath: externaldb.jks
+            {{- end }}
             {{- if .Values.optimize.extraVolumeMounts }}
             {{- .Values.optimize.extraVolumeMounts | toYaml | nindent 12 }}
             {{- end }}
@@ -63,28 +128,59 @@ spec:
           image: {{ include "camundaPlatform.imageByParams" (dict "base" .Values.global "overlay" .Values.optimize) }}
           imagePullPolicy: {{ .Values.global.image.pullPolicy }}
           {{- if .Values.optimize.containerSecurityContext }}
-          securityContext: {{- toYaml .Values.optimize.containerSecurityContext | nindent 12 }}
+          securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" $.Values.optimize.containerSecurityContext "context" $) | nindent 12 }}
           {{- end }}
           env:
+            - name: CAMUNDA_LICENSE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "camundaPlatform.licenseSecretName" . }}
+                  key: {{ include "camundaPlatform.licenseSecretKey" . }}
+            {{- if and .Values.global.elasticsearch.external  (include "elasticsearch.passwordIsDefined" .) }}
+            - name: CAMUNDA_OPTIMIZE_ELASTICSEARCH_SECURITY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "elasticsearch.authExistingSecret" . | quote }}
+                  key: {{ include "elasticsearch.authExistingSecretKey" . | quote }}
+            {{- end }}
+            {{- if .Values.global.opensearch.enabled }}
+              {{- if eq .Values.global.opensearch.url.protocol "https" }}
+            - name: CAMUNDA_OPTIMIZE_OPENSEARCH_SSL_ENABLED
+              value: "true"
+              {{- end }}
+            - name: CAMUNDA_OPTIMIZE_DATABASE
+              value: opensearch
+            - name: CAMUNDA_OPTIMIZE_OPENSEARCH_HTTP_PORT
+              value: {{ .Values.global.opensearch.url.port | quote }}
+            - name: CAMUNDA_OPTIMIZE_OPENSEARCH_HOST
+              value: {{ include "camundaPlatform.opensearchHost" . | quote }}
+            - name: CAMUNDA_OPTIMIZE_OPENSEARCH_SECURITY_USERNAME
+              value: {{ .Values.global.opensearch.auth.username | quote }}
+            {{- if or .Values.global.opensearch.auth.existingSecret .Values.global.opensearch.auth.password }}
+            - name: CAMUNDA_OPTIMIZE_OPENSEARCH_SECURITY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "opensearch.authExistingSecret" . | quote }}
+                  key: {{ include "opensearch.authExistingSecretKey" . | quote }}
+            {{- end}}
+            {{- end }}
+            {{- if or .Values.global.elasticsearch.tls.existingSecret .Values.global.opensearch.tls.existingSecret }}
+            - name: JAVA_TOOL_OPTIONS
+              value: -Djavax.net.ssl.trustStore=/optimize/certificates/externaldb.jks
+            {{- end }}
             {{- if .Values.optimize.contextPath }}
             - name: CAMUNDA_OPTIMIZE_CONTEXT_PATH
               value: {{ .Values.optimize.contextPath | quote }}
             {{- end }}
-            - name: CAMUNDA_OPTIMIZE_ZEEBE_ENABLED
-              value: "true"
-            - name: CAMUNDA_OPTIMIZE_ZEEBE_PARTITION_COUNT
-              value: {{ .Values.optimize.partitionCount | quote }}
+            {{- if .Values.global.elasticsearch.enabled }}
             - name: OPTIMIZE_ELASTICSEARCH_HOST
               value: {{ include "camundaPlatform.elasticsearchHost" . | quote }}
             - name: OPTIMIZE_ELASTICSEARCH_HTTP_PORT
-              value: {{ .Values.global.elasticsearch.port | quote }}
-            {{- if .Values.global.identity.auth.enabled }}
+              value: {{ .Values.global.elasticsearch.url.port | quote }}
+            {{- end }}
             - name: SPRING_PROFILES_ACTIVE
-              value: "ccsm"
-            - name: CAMUNDA_OPTIMIZE_IDENTITY_REDIRECT_ROOT_URL
-              value: {{ tpl .Values.global.identity.auth.optimize.redirectUrl $ | quote }}
-            - name: CAMUNDA_IDENTITY_CLIENT_ID
-              value: {{ include "optimize.authClientId" . | quote }}
+              value: ccsm
+            {{- if .Values.global.identity.auth.enabled }}
             - name: CAMUNDA_IDENTITY_CLIENT_SECRET
               {{- if and .Values.global.identity.auth.optimize.existingSecret (not (typeIs "string" .Values.global.identity.auth.optimize.existingSecret)) }}
               valueFrom:
@@ -95,22 +191,14 @@ spec:
                       and in statefulset https://github.com/bitnami/charts/blob/master/bitnami/keycloak/templates/statefulset.yaml
                   */}}
                   name: {{ include "common.secrets.name" (dict "existingSecret" .Values.global.identity.auth.optimize.existingSecret "context" $) }}
-                  key: optimize-secret
+                  key: {{ .Values.global.identity.auth.optimize.existingSecretKey }}
               {{- else }}
               valueFrom:
                 secretKeyRef:
                   name: {{ include "camundaPlatform.identitySecretName" (dict "context" . "component" "optimize") }}
-                  key: optimize-secret
+                  key: {{ .Values.global.identity.auth.optimize.existingSecretKey }}
               {{- end }}
-            - name: CAMUNDA_IDENTITY_AUDIENCE
-              value: {{ include "optimize.authAudience" . | quote }}
-            - name: CAMUNDA_OPTIMIZE_API_AUDIENCE
-              value: "optimize-api"
-            - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI
-              value: {{ include "camundaPlatform.authIssuerBackendUrlCertsEndpoint" . | quote }}
               {{- end }}
-            - name: CAMUNDA_OPTIMIZE_SECURITY_AUTH_COOKIE_SAME_SITE_ENABLED
-              value: "false"
             {{- if .Values.global.multitenancy.enabled }}
             - name: CAMUNDA_OPTIMIZE_MULTITENANCY_ENABLED
               value: "true"
@@ -119,13 +207,20 @@ spec:
             - name: CAMUNDA_OPTIMIZE_CACHES_CLOUD_TENANT_AUTHORIZATIONS_MIN_FETCH_INTERVAL_SECONDS
               value: "600000"
             {{- end }}
+            {{- if .Values.global.opensearch.aws.enabled }}
+            - name: CAMUNDA_OPTIMIZE_OPENSEARCH_AWS_ENABLED
+              value: "true"
+            {{- end }}
           {{- with .Values.optimize.env }}
             {{- tpl (toYaml .) $ | nindent 12 }}
           {{- end }}
-          {{- if .Values.global.identity.auth.enabled }}
           envFrom:
+          {{- if .Values.global.identity.auth.enabled }}
             - configMapRef:
                 name: {{ include "camundaPlatform.fullname" . }}-identity-env-vars
+          {{- end }}
+          {{- if .Values.optimize.envFrom -}}
+           {{ .Values.optimize.envFrom | toYaml | nindent 12 }}
           {{- end }}
           {{- if .Values.optimize.command }}
           command: {{ toYaml .Values.optimize.command | nindent 10 }}
@@ -180,6 +275,24 @@ spec:
               name: tmp
             - mountPath: /camunda
               name: camunda
+            - mountPath: /optimize/config/environment-config.yaml
+              subPath: environment-config.yaml
+              name: environment-config
+            {{- if .Values.global.identity.auth.enabled }}
+            - mountPath: /optimize/config/application-ccsm.yaml
+              subPath: application-ccsm.yaml
+              name: environment-config
+            {{- end }}
+            {{- range $key, $val := .Values.optimize.extraConfiguration }}
+            - name: environment-config
+              mountPath: /optimize/config/{{ $key }}
+              subPath: {{ $key }}
+            {{- end }}
+            {{- if or .Values.global.elasticsearch.tls.existingSecret .Values.global.opensearch.tls.existingSecret }}
+            - name: keystore
+              mountPath: /optimize/certificates/externaldb.jks
+              subPath: externaldb.jks
+            {{- end }}
             {{- if .Values.optimize.extraVolumeMounts }}
             {{- .Values.optimize.extraVolumeMounts | toYaml | nindent 12 }}
             {{- end }}
@@ -191,14 +304,34 @@ spec:
           emptyDir: {}
         - name: camunda
           emptyDir: {}
+        - name: environment-config
+          configMap:
+            name: {{ include "optimize.fullname" . }}-configuration
+            defaultMode: {{ .Values.optimize.configMap.defaultMode }}
+        {{- if .Values.global.elasticsearch.tls.existingSecret }}
+        - name: keystore
+          secret:
+            secretName: {{ .Values.global.elasticsearch.tls.existingSecret }}
+            optional: false
+        {{- end }}
+        {{- if .Values.global.opensearch.tls.existingSecret }}
+        - name: keystore
+          secret:
+            secretName: {{ .Values.global.opensearch.tls.existingSecret }}
+            optional: false
+        {{- end }}
         {{- if .Values.optimize.extraVolumes }}
         {{- .Values.optimize.extraVolumes | toYaml | nindent 8 }}
         {{- end }}
-      {{- if .Values.optimize.serviceAccount.name }}
-      serviceAccountName: {{ .Values.optimize.serviceAccount.name }}
+      serviceAccountName: {{ include "optimize.serviceAccountName" . }}
+      {{- if .Values.optimize.dnsConfig }}
+      dnsConfig: {{- toYaml .Values.optimize.dnsConfig | nindent 8 }}
+      {{- end }}
+      {{- if .Values.optimize.dnsPolicy }}
+      dnsPolicy: {{ .Values.optimize.dnsPolicy | quote }}
       {{- end }}
       {{- if .Values.optimize.podSecurityContext }}
-      securityContext: {{- toYaml .Values.optimize.podSecurityContext | nindent 8 }}
+      securityContext: {{- include "common.compatibility.renderSecurityContext" (dict "secContext" $.Values.optimize.podSecurityContext "context" $) | nindent 8 }}
       {{- end }}
 {{- with .Values.optimize.nodeSelector }}
       nodeSelector:

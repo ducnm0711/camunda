@@ -1,4 +1,4 @@
-{{- if  and .Values.prometheusServiceMonitor.enabled  .Values.operate.enabled -}}
+{{- if and .Values.prometheusServiceMonitor.enabled .Values.operate.enabled -}}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -12,11 +12,7 @@ spec:
       app.kubernetes.io/component: operate
   endpoints:
     - honorLabels: true
-      {{- if .Values.operate.ingress.enabled }}
-      path: /actuator/prometheus
-      {{- else }}
-      path: {{ .Values.operate.contextPath }}/actuator/prometheus
-      {{- end }}
-      port: http
+      path: {{ .Values.operate.contextPath }}{{ .Values.operate.metrics.prometheus }}
+      port: management
       interval: {{ .Values.prometheusServiceMonitor.scrapeInterval }}
 {{- end }}

@@ -3,7 +3,6 @@
 {{/*
 Create a default fully qualified app name.
 */}}
-
 {{- define "operate.fullname" -}}
     {{- include "camundaPlatform.componentFullname" (dict
         "componentName" "operate"
@@ -17,6 +16,7 @@ Defines extra labels for operate.
 */}}
 {{ define "operate.extraLabels" -}}
 app.kubernetes.io/component: operate
+app.kubernetes.io/version: {{ include "camundaPlatform.imageTagByParams" (dict "base" .Values.global "overlay" .Values.operate) | quote }}
 {{- end }}
 
 {{/*
@@ -34,20 +34,18 @@ Defines match labels for operate, which are extended by sub-charts and should be
 */}}
 {{- define "operate.matchLabels" -}}
     {{- include "camundaPlatform.matchLabels" . }}
-    {{- "\n" }}
-    {{- include "operate.extraLabels" . }}
+app.kubernetes.io/component: operate
 {{- end -}}
 
 {{/*
 [operate] Create the name of the service account to use
 */}}
 {{- define "operate.serviceAccountName" -}}
-    {{- if .Values.operate.serviceAccount.enabled }}
-        {{- default (include "operate.fullname" .) .Values.operate.serviceAccount.name }}
-    {{- else }}
-        {{- default "default" .Values.operate.serviceAccount.name }}
-    {{- end }}
-{{- end }}
+    {{- include "camundaPlatform.serviceAccountName" (dict
+        "component" "operate"
+        "context" $
+    ) -}}
+{{- end -}}
 
 {{/*
 [operate] Get the image pull secrets.
@@ -64,5 +62,5 @@ Defines match labels for operate, which are extended by sub-charts and should be
 {{- end -}}
 
 {{- define "operate.authAudience" -}}
-  {{- .Values.global.identity.auth.operate.audience -}}
+  {{- .Values.global.identity.auth.operate.audience | default "operate-api" -}}
 {{- end -}}

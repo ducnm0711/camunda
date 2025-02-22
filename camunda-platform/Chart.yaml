@@ -1,7 +1,7 @@
 annotations:
   artifacthub.io/changes: |
     - kind: fixed
-      description: "update camunda/connectors-bundle docker tag to v8.4.3"
+      description: "Add new line to 8.6"
   artifacthub.io/containsSecurityUpdates: "false"
   artifacthub.io/links: |
     - name: Camunda 8 docs
@@ -10,26 +10,31 @@ annotations:
       url: https://docs.camunda.io/docs/self-managed/about-self-managed/
     - name: Camunda 8 Self-Managed Helm charts
       url: https://github.com/camunda/camunda-platform-helm
+  camunda.io/helmCLIVersion: 3.17.0
 apiVersion: v2
-appVersion: 8.4.x
+appVersion: 8.6.x
 dependencies:
-- condition: identity.enabled
-  import-values:
-  - child: image
-    parent: global.identity.image
-  name: identity
-  repository: ""
-  version: 9.0.2
+- alias: identityKeycloak
+  condition: identity.keycloak.enabled,identityKeycloak.enabled
+  name: keycloak
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 22.2.6
+- alias: identityPostgresql
+  condition: identity.postgresql.enabled,identityPostgresql.enabled
+  name: postgresql
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 15.x.x
+- alias: postgresql
+  condition: postgresql.enabled
+  name: web-modeler-postgresql
+  repository: file://../web-modeler-postgresql-15
+  version: 15.x.x
 - condition: elasticsearch.enabled
   name: elasticsearch
   repository: oci://registry-1.docker.io/bitnamicharts
-  version: 19.13.15
-- condition: postgresql.enabled
-  name: postgresql
-  repository: https://charts.bitnami.com/bitnami
-  version: 11.x.x
+  version: 21.4.5
 - name: common
-  repository: https://charts.bitnami.com/bitnami
+  repository: oci://registry-1.docker.io/bitnamicharts
   version: 2.x.x
 description: 'Camunda 8 Self-Managed Helm charts. Camunda''s process automation platform
   allows developers to design, automate and improve processes. '
@@ -43,12 +48,16 @@ keywords:
 - process-engine
 - workflow
 maintainers:
-- email: christopher.zell@camunda.com
-  name: Zelldon
 - email: ahmed.abouzaid@camunda.com
   name: aabouzaid
+- email: daniel.rodriguez@camunda.com
+  name: drodriguez-305
+- email: hamza.masood@camunda.com
+  name: hamza-m-masood
+- email: jesse.simpson@camunda.com
+  name: jessesimpson36
 name: camunda-platform
 sources:
 - https://github.com/camunda/camunda-platform-helm
 type: application
-version: 9.0.2
+version: 11.2.1
